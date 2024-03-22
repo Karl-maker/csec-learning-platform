@@ -34,15 +34,15 @@ export function fitQuestionEntityToPrismaCreateInput(question: Question): Prisma
             text: null | string;
             type: string;
             url: null | string;
-            is_correct: boolean;
+            correct: boolean;
         } = {
             text: null,
             type: '',
             url: null,
-            is_correct: false
+            correct: false
         };
         response.type = m.content.type;
-        response.is_correct = m.is_correct
+        response.correct = m.is_correct
         if(m.content.url) response.url = m.content.url;
         if(m.content.text) response.text = m.content.text;
         return response;

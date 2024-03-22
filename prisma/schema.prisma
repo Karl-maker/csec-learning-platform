@@ -18,7 +18,7 @@ datasource db {
 model Question {
   id                      Int                    @id @default(autoincrement())
   name                    String
-  description             String
+  description             String                 @db.VarChar(1000)
   tier_level              Int                    @default(1)
   created_at              DateTime               @default(now())
   content                 QuestionContent[]
@@ -72,7 +72,7 @@ model QuestionHint {
 model Subject {
   id          Int                @id @default(autoincrement())
   name        String
-  description String
+  description String             @db.VarChar(1000)
   created_at  DateTime           @default(now())
   subjects    SubjectBreakdown[]
 }
@@ -80,7 +80,7 @@ model Subject {
 model SubjectBreakdown {
   id          Int      @id @default(autoincrement())
   name        String
-  description String
+  description String   @db.VarChar(1000)
   subject     Subject  @relation(fields: [subject_id], references: [id], onDelete: Cascade)
   courses     Course[]
   subject_id  Int
@@ -90,7 +90,7 @@ model SubjectBreakdown {
 model Course {
   id                   Int              @id @default(autoincrement())
   name                 String
-  description          String
+  description          String           @db.VarChar(1000)
   subject_breakdown    SubjectBreakdown @relation(fields: [subject_breakdown_id], references: [id], onDelete: Cascade)
   subject_breakdown_id Int
   created_at           DateTime         @default(now())
@@ -100,7 +100,7 @@ model Course {
 model Topic {
   id          Int             @id @default(autoincrement())
   name        String
-  description String
+  description String          @db.VarChar(1000)
   created_at  DateTime        @default(now())
   courses     CourseTopic[]   
   questions   QuestionTopic[]

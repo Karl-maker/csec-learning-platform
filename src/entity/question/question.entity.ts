@@ -22,8 +22,8 @@ export default class Question {
         this.content = data.content;
         this.tier_level = data.tier_level;
         this.multiple_choice = data.multiple_choices || null;
-        this.topics = data.topics;
-        this.tips = ('tips' in data) ? data.tips : [];
+        this.topics = data.topics || [];
+        this.tips = data.tips || [];
     }
 
     /**
