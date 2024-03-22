@@ -11,5 +11,6 @@ const repository: IQuestionRepository<PrismaClient> = new PrismaQuestionReposito
 const usecase = new QuestionUseCase(repository);
 
 routes.post('/', controller.create(usecase));
+routes.get('/', controller.findAll(usecase));
 
 export default routes;

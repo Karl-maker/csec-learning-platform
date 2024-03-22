@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import Question from "../../entity/question/question.entity";
 import { Content, ContentType } from "../../types/utils.type";
-import { QuestionMultipleChoiceType, QuestionTopicsType } from "../../types/question.type";
+import { QuestionMultipleChoiceType, QuestionTopicsType, TipType } from "../../types/question.type";
 
 export function fitQuestionEntityToPrismaCreateInput(question: Question): Prisma.QuestionCreateInput {
     
@@ -160,6 +160,19 @@ export function fitQuestionPrismaRepositoryToEntity(question: {
         question_id: number;
         created_at: Date;
     }[];
+    hints?: ({
+        hint: {
+            id: number;
+            text: string | null;
+            url: string | null;
+            type: string;
+            created_at: Date;
+        };
+    } & {
+        hint_id: number;
+        question_id: number;
+        assigned_at: Date;
+    })[];
     topics?: ({
         topic: {
             id: number;
@@ -208,10 +221,23 @@ export function fitQuestionPrismaRepositoryToEntity(question: {
         return result;
     }) : undefined;
 
+    const tips: TipType[] | undefined = question.hints ? question.hints.map((h) => {
+        const result: TipType = {
+            id: h.hint.id,
+            type: h.hint.type as ContentType
+        };
+
+        if(h.hint.text) result.text = h.hint.text;
+        if(h.hint.url) result.url = h.hint.url;
+
+        return result;
+    }) : undefined
+
     return new Question({
         content,
         topics,
         multiple_choices,
+        tips,
         tier_level: question.tier_level,
         id: question.id,
         name: question.name,

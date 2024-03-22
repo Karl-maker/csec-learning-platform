@@ -1,6 +1,7 @@
 import QuestionRepository from "../../adapters/repositories/question/prisma.question.repository";
 import Question from "../../entity/question/question.entity";
-import { CreateQuestionUseCaseResponse, QuestionBeforeSavedType } from "../../types/question.type";
+import { CreateQuestionUseCaseResponse, FindAllQuestionUseCaseResponse, QuestionBeforeSavedType, QuestionSortKeys } from "../../types/question.type";
+import { QueryInput, Sort } from "../../types/repository.type";
 
 export default class QuestionUseCase {
     private repository: QuestionRepository;
@@ -31,4 +32,16 @@ export default class QuestionUseCase {
         }
         
     };
+
+    async findAll(query: QueryInput<Question>, sort: Sort<QuestionSortKeys>): Promise<FindAllQuestionUseCaseResponse> {
+        try {
+            const result = await this.repository.findAll(query, sort);
+            return {
+                amount: result.amount,
+                questions: result.data || []
+            }
+        } catch(err) {
+            throw err;
+        }
+    }
 }

@@ -27,5 +27,9 @@ export type CreateQuestionUseCaseResponse = {
     success: boolean;
     message?: string;
 }
-
+export type FindAllQuestionUseCaseResponse = {
+    questions: Question[];
+    amount: number;
+}
 export type TipType = Content;
+export type QuestionSortKeys = 'id' | 'created_at';
