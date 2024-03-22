@@ -2,11 +2,15 @@
   "name": "databank",
   "version": "1.0.0",
   "description": "data bank for prices and products",
-  "main": "src/index.js",
+  "main": "src/framework/express/server.entry.ts",
   "directories": {
     "doc": "docs"
   },
-  "scripts": {},
+  "scripts": {
+    "build": "npx tsc",
+    "start": "node dist/server.entry.js",
+    "dev": "nodemon src/framework/express/server.entry.ts"
+  },
   "author": "Karl-Johan Bailey",
   "license": "ISC",
   "engines": {
@@ -21,6 +25,8 @@
   },
   "dependencies": {
     "@prisma/client": "^5.11.0",
-    "express": "^4.19.1"
+    "dotenv": "^16.4.5",
+    "express": "^4.19.1",
+    "nodemon": "^3.1.0"
   }
 }
