@@ -25,6 +25,7 @@ model Question {
   multiple_choice_answers MultipleChoiceAnswer[]
   hints                   QuestionHint[]
   topics                  QuestionTopic[]
+  exams                   ExamQuestion[]
 }
 
 model QuestionContent {
@@ -85,6 +86,7 @@ model SubjectBreakdown {
   courses     Course[]
   subject_id  Int
   created_at  DateTime @default(now())
+  exams       Exam[]
 }
 
 model Course {
@@ -102,7 +104,7 @@ model Topic {
   name        String
   description String          @db.VarChar(1000)
   created_at  DateTime        @default(now())
-  courses     CourseTopic[]   
+  courses     CourseTopic[]
   questions   QuestionTopic[]
 }
 
@@ -124,4 +126,39 @@ model QuestionTopic {
   assigned_at DateTime @default(now())
 
   @@id([question_id, topic_id])
+}
+
+// Exam
+
+model Exam {
+  id            Int              @id @default(autoincrement())
+  exam_board    ExamBoard        @relation(fields: [exam_board_id], references: [id], onDelete: Cascade)
+  exam_board_id Int
+  tier_level    Int              @default(1)
+  subject       SubjectBreakdown @relation(fields: [subject_id], references: [id], onDelete: Cascade)
+  subject_id    Int
+  occured_at    DateTime
+  created_at    DateTime         @default(now())
+  questions     ExamQuestion[]
+}
+
+model ExamQuestion {
+  index       Int
+  section     String
+  question_no String
+  exam        Exam     @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  exam_id     Int
+  question    Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  question_id Int
+  assigned_at DateTime @default(now())
+
+  @@id([question_id, exam_id])
+}
+
+model ExamBoard {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  founded     DateTime
+  exams       Exam[]
 }
