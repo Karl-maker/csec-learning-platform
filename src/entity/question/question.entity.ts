@@ -1,4 +1,4 @@
-import { QuestionBeforeSavedType, QuestionMultipleChoiceType, QuestionTopicsType, QuestionType } from "../../types/question.type";
+import { QuestionBeforeSavedType, QuestionMultipleChoiceType, QuestionTopicsType, QuestionType, TipType } from "../../types/question.type";
 import { Content } from "../../types/utils.type";
 
 /**
@@ -12,8 +12,8 @@ export default class Question {
     public content: Content[];
     public tier_level: number;
     public multiple_choice: QuestionMultipleChoiceType[] | null;
-    public topics: QuestionTopicsType[];
-    public tips: Content[];
+    public topics?: QuestionTopicsType[];
+    public tips?: TipType[];
 
     constructor(data: QuestionBeforeSavedType | QuestionType) {
         this.id = ('id' in data) ? data.id : null; 
@@ -23,7 +23,7 @@ export default class Question {
         this.tier_level = data.tier_level;
         this.multiple_choice = data.multiple_choices || null;
         this.topics = data.topics;
-        this.tips = data.tips;
+        this.tips = ('tips' in data) ? data.tips : [];
     }
 
     /**

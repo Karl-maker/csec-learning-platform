@@ -102,7 +102,7 @@ model Topic {
   name        String
   description String
   created_at  DateTime        @default(now())
-  courses     CourseTopic[]
+  courses     CourseTopic[]   
   questions   QuestionTopic[]
 }
 

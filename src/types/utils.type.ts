@@ -1,4 +1,5 @@
 export type Content = {
+    id?: number;
     type: ContentType;
     url?: string;
     text?: string;
