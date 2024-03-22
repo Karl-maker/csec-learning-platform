@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express"
 import Question from "../../../entity/question/question.entity"
 import QuestionUseCase from "../../../usecase/question/question.usecase"
-import QuestionRepository from "../../repositories/question/question.repository"
+import QuestionRepository from "../../repositories/question/prisma.question.repository"
 import { QuestionDTO } from "../../presenters/dto/question/question.create.dto";
 import logger from "../../../utils/loggers/logger.util";
 

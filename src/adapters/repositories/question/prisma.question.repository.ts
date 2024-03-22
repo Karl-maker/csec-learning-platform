@@ -1,11 +1,13 @@
+import { Prisma } from "@prisma/client";
 import Question from "../../../entity/question/question.entity";
 import logger from "../../../utils/loggers/logger.util";
-import IRepository from "../base/interface.repository";
+import IQuestionRepository from "./interface.question.respository";
 
-export default class QuestionRepository implements IRepository<Question> {
+export default class PrismaQuestionRepository implements IQuestionRepository {
     constructor() {}
 
     async save(question: Question): Promise<Question> {
+        
         logger.debug(`QuestionRepository.save: `, question);
         return question;
     }

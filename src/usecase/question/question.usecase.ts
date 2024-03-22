@@ -1,4 +1,4 @@
-import QuestionRepository from "../../adapters/repositories/question/question.repository";
+import QuestionRepository from "../../adapters/repositories/question/prisma.question.repository";
 import Question from "../../entity/question/question.entity";
 import { CreateQuestionUseCaseResponse, QuestionBeforeSavedType } from "../../types/question.type";
 

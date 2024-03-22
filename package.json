@@ -9,7 +9,8 @@
   "scripts": {
     "build": "npx tsc",
     "start": "node dist/server.entry.js",
-    "dev": "nodemon src/framework/express/server.entry.ts"
+    "dev": "nodemon src/framework/express/server.entry.ts",
+    "migrate": "npx prisma migrate dev --name"
   },
   "author": "Karl-Johan Bailey",
   "license": "ISC",

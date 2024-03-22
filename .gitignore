@@ -18,9 +18,11 @@ javascript/**/migrations/
 typescript/**/migrations/
 misc/**/migrations/
 databases/**/migrations/
+prisma/**/migrations/
 experimental/**/*.db
 .next
 .vscode/
 .nuxt
 dev.db
 .env
+prisma/migrations

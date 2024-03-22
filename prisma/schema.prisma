@@ -12,3 +12,116 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+// Questions
+
+model Question {
+  id                      Int                    @id @default(autoincrement())
+  name                    String
+  description             String
+  tier_level              Int                    @default(1)
+  created_at              DateTime               @default(now())
+  content                 QuestionContent[]
+  multiple_choice_answers MultipleChoiceAnswer[]
+  hints                   QuestionHint[]
+  topics                  QuestionTopic[]
+}
+
+model QuestionContent {
+  id          Int      @id @default(autoincrement())
+  text        String?
+  url         String?
+  type        String
+  question    Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  question_id Int
+  created_at  DateTime @default(now())
+}
+
+model MultipleChoiceAnswer {
+  id          Int      @id @default(autoincrement())
+  text        String?
+  url         String?
+  type        String
+  correct     Boolean  @default(false)
+  question    Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  question_id Int
+  created_at  DateTime @default(now())
+}
+
+model Hint {
+  id         Int            @id @default(autoincrement())
+  text       String?
+  url        String?
+  type       String
+  created_at DateTime       @default(now())
+  questions  QuestionHint[]
+}
+
+model QuestionHint {
+  hint        Hint     @relation(fields: [hint_id], references: [id], onDelete: Cascade)
+  hint_id     Int
+  question    Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  question_id Int
+  assigned_at DateTime @default(now())
+
+  @@id([hint_id, question_id])
+}
+
+// Subjects
+
+model Subject {
+  id          Int                @id @default(autoincrement())
+  name        String
+  description String
+  created_at  DateTime           @default(now())
+  subjects    SubjectBreakdown[]
+}
+
+model SubjectBreakdown {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  subject     Subject  @relation(fields: [subject_id], references: [id], onDelete: Cascade)
+  courses     Course[]
+  subject_id  Int
+  created_at  DateTime @default(now())
+}
+
+model Course {
+  id                   Int              @id @default(autoincrement())
+  name                 String
+  description          String
+  subject_breakdown    SubjectBreakdown @relation(fields: [subject_breakdown_id], references: [id], onDelete: Cascade)
+  subject_breakdown_id Int
+  created_at           DateTime         @default(now())
+  topics               CourseTopic[]
+}
+
+model Topic {
+  id          Int             @id @default(autoincrement())
+  name        String
+  description String
+  created_at  DateTime        @default(now())
+  courses     CourseTopic[]
+  questions   QuestionTopic[]
+}
+
+model CourseTopic {
+  course      Course   @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  course_id   Int
+  topic       Topic    @relation(fields: [topic_id], references: [id], onDelete: Cascade)
+  topic_id    Int
+  assigned_at DateTime @default(now())
+
+  @@id([course_id, topic_id])
+}
+
+model QuestionTopic {
+  question    Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  question_id Int
+  topic       Topic    @relation(fields: [topic_id], references: [id], onDelete: Cascade)
+  topic_id    Int
+  assigned_at DateTime @default(now())
+
+  @@id([question_id, topic_id])
+}
