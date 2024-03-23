@@ -39,7 +39,9 @@ function findAll(usecase: QuestionUseCase) {
     return async (req: Request, res: Response, next: NextFunction) => {
         try{
             const { page_number, page_size, order, field } = req.query;
-            const result = await usecase.findAll({}, {
+            const result = await usecase.findAll({
+                topics: req.query.topics ? [String(req.query.topics)] : null
+            }, {
                 page: {
                     number: Number(page_number) || 1,
                     size: Number(page_size) || 10

@@ -3,7 +3,7 @@ import IQuestionRepository from "../interfaces/interface.question.respository";
 import { PrismaClient, Prisma } from '@prisma/client'
 import { fitQuestionEntityToPrismaCreateInput, fitQuestionPrismaRepositoryToEntity } from "../../../utils/question/data.fit";
 import { Sort, FoundData, QueryInput, FindResponse, SearchResponse } from "../../../types/repository.type";
-import { QuestionType } from "../../../types/question.type";
+import { QuestionFilter, QuestionSortKeys, QuestionType } from "../../../types/question.type";
 import IQuestion from "../../../entities/interfaces/interface.question.entity";
 import { Content } from "../../../types/utils.type";
 
@@ -113,18 +113,47 @@ export default class PrismaQuestionRepository implements IQuestionRepository<Pri
         const { number, size } = page;
         const { order, key } = field;
 
+        let only = query;
+    
+        //if(query.only) only = query.only as QuestionFilterBy;
+
         const [totalCount, results] = await Promise.all([
             await this.data_access.question.count({
-                where: {} // Add your query conditions here if needed
+                where: {
+                    topics: only.topics ? {
+                        some: {
+                            topic: {
+                                name: {
+                                    in: only.topics
+                                }
+                            }
+                        }
+                    } : {}
+                } // Add your query conditions here if needed
             }),
             await this.data_access.question.findMany({
-                where: {},
+                where: {
+                    topics: only.topics ? {
+                        some: {
+                            topic: {
+                                name: {
+                                    in: only.topics
+                                }
+                            }
+                        }
+                    } : {}
+                },
                 include: {
                     multiple_choice_answers: true,
                     content: true,
                     topics: {
                         include: {
                             topic: true
+                        }
+                    },
+                    hints: {
+                        include: {
+                            hint: true
                         }
                     }
                 },

@@ -4,7 +4,7 @@ import QuestionRepository from "../../adapters/repositories/prisma/prisma.questi
 import MultipleChoiceQuestion from "../../entities/concretes/multiple.choice.question.entity";
 import IQuestion from "../../entities/interfaces/interface.question.entity";
 import IUploadRepository from "../../services/file/interface.file.storage.service";
-import { QuestionMultipleChoiceType, QuestionSortKeys, QuestionTopicsType, QuestionType } from "../../types/question.type";
+import { QuestionFilter, QuestionMultipleChoiceType, QuestionSortKeys, QuestionTopicsType, QuestionType } from "../../types/question.type";
 import { QueryInput, Sort } from "../../types/repository.type";
 import { CreateUseCaseResponse, FindAllUseCaseResponse, SearchUseCaseResponse, UpdateUseCaseResponse } from "../../types/usecase.type";
 import { Content } from "../../types/utils.type";
@@ -171,7 +171,7 @@ export default class QuestionUseCase {
         
     };
 
-    async findAll(query: QueryInput<IQuestion>, sort: Sort<QuestionSortKeys>): Promise<FindAllUseCaseResponse<IQuestion>> {
+    async findAll(query: QueryInput<QuestionFilter>, sort: Sort<QuestionSortKeys>): Promise<FindAllUseCaseResponse<IQuestion>> {
         try {
             const result = await this.repository.findAll(query, sort);
             return {

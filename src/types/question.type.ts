@@ -22,3 +22,6 @@ export type QuestionTopicsType = {
 }
 export type TipType = Content;
 export type QuestionSortKeys = 'id' | 'created_at';
+export type QuestionFilter = {
+    topics: string[];
+}

@@ -19,8 +19,7 @@ export type SearchResponse<T> = {
     data: T[];
     amount: number;
 }
-export type QueryInput<T> = {
-}
+export type QueryInput<Q> = Record<keyof Q, string[] | null>;
 export type ConnectById = {
     id: number;
 }
