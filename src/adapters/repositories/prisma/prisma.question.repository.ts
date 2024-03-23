@@ -1,11 +1,9 @@
-import Question from "../../../entity/question/question.entity";
 import logger from "../../../utils/loggers/logger.util";
-import IQuestionRepository from "./interface.question.respository";
+import IQuestionRepository from "../interfaces/interface.question.respository";
 import { PrismaClient } from '@prisma/client'
 import { fitQuestionEntityToPrismaCreateInput, fitQuestionPrismaRepositoryToEntity } from "../../../utils/question/data.fit";
 import { Sort, FoundData, QueryInput, FindResponse, SearchResponse } from "../../../types/repository.type";
-import { QuestionSortKeys } from "../../../types/question.type";
-import IQuestion from "../../../entity/question/interface.question.entity";
+import IQuestion from "../../../entities/interfaces/interface.question.entity";
 
 export default class PrismaQuestionRepository implements IQuestionRepository<PrismaClient> {
     data_access: PrismaClient;
@@ -14,7 +12,7 @@ export default class PrismaQuestionRepository implements IQuestionRepository<Pri
         this.data_access = prisma
     }
 
-    async findAll<QuestionSortKeys>(query: QueryInput<Question>, sort: Sort<QuestionSortKeys>): Promise<FindResponse<Question>> {
+    async findAll<QuestionSortKeys>(query: QueryInput<IQuestion>, sort: Sort<QuestionSortKeys>): Promise<FindResponse<IQuestion>> {
         logger.debug(`Enter PrismaQuestionRepository.find()`);
     
         const { page, field } = sort;
@@ -53,7 +51,7 @@ export default class PrismaQuestionRepository implements IQuestionRepository<Pri
         };
     }
 
-    async search<QuestionSortKeys>(search: string, sort: Sort<QuestionSortKeys>): Promise<SearchResponse<Question>> {
+    async search<QuestionSortKeys>(search: string, sort: Sort<QuestionSortKeys>): Promise<SearchResponse<IQuestion>> {
         logger.debug(`Enter PrismaQuestionRepository.search()`);
     
         const { page, field } = sort;
@@ -147,7 +145,7 @@ export default class PrismaQuestionRepository implements IQuestionRepository<Pri
         };
     }
     
-    async save(question: Question): Promise<Question> {
+    async save(question: IQuestion): Promise<IQuestion> {
         logger.debug(`Enter PrismaQuestionRepository.save()`);
 
         const result = await this.data_access.question.create({

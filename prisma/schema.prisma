@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearch", "fullTextIndex", "relationJoins"]
 }
 
@@ -36,6 +36,8 @@ model QuestionContent {
   id          Int      @id @default(autoincrement())
   text        String?
   url         String?
+  alt         String?
+  key         String?
   type        String
   question    Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
   question_id Int
@@ -48,6 +50,8 @@ model MultipleChoiceAnswer {
   id          Int      @id @default(autoincrement())
   text        String?
   url         String?
+  alt         String?
+  key         String?
   type        String
   correct     Boolean  @default(false)
   question    Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
@@ -59,6 +63,8 @@ model Hint {
   id         Int            @id @default(autoincrement())
   text       String?
   url        String?
+  alt        String?
+  key        String?
   type       String
   created_at DateTime       @default(now())
   questions  QuestionHint[]

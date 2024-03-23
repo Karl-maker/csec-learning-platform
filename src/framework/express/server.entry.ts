@@ -4,7 +4,7 @@ import { ROUTES } from '../../constants';
 import logger from '../../utils/loggers/logger.util';
 
 // Routes
-import * as QuestionRoutes from './routes/question.routes';
+import * as QuestionRoutes from '../../adapters/presenters/routes/question.routes';
 
 dotenv.config(); // for process.env to work!
 

@@ -8,9 +8,11 @@ interface IQuestion {
     content: Content[];
     tier_level: number;
     topics?: QuestionTopicsType[];
+    multiple_choice?: QuestionMultipleChoiceType[] | null;
     tips?: TipType[];
 
     isDifficultyLevelInRange(): boolean;
+
 }
 
 export default IQuestion;
