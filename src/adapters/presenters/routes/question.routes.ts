@@ -15,6 +15,7 @@ const usecase = new QuestionUseCase(repository, fileRepository);
 routes.post('/', controller.create(usecase));
 routes.get('/', controller.findAll(usecase));
 routes.get('/search', controller.search(usecase));
+routes.patch('/:question_id', controller.updateById(usecase));
 
 
 export default routes;

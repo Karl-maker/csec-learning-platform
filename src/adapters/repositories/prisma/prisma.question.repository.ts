@@ -1,9 +1,11 @@
 import logger from "../../../utils/loggers/logger.util";
 import IQuestionRepository from "../interfaces/interface.question.respository";
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, Prisma } from '@prisma/client'
 import { fitQuestionEntityToPrismaCreateInput, fitQuestionPrismaRepositoryToEntity } from "../../../utils/question/data.fit";
 import { Sort, FoundData, QueryInput, FindResponse, SearchResponse } from "../../../types/repository.type";
+import { QuestionType } from "../../../types/question.type";
 import IQuestion from "../../../entities/interfaces/interface.question.entity";
+import { Content } from "../../../types/utils.type";
 
 export default class PrismaQuestionRepository implements IQuestionRepository<PrismaClient> {
     data_access: PrismaClient;
@@ -11,6 +13,98 @@ export default class PrismaQuestionRepository implements IQuestionRepository<Pri
     constructor(prisma: PrismaClient) {
         this.data_access = prisma
     }
+
+    async updateById(id: number, data: Partial<QuestionType>): Promise<IQuestion> {
+
+        let update: Prisma.XOR<Prisma.QuestionUpdateInput, Prisma.QuestionUncheckedUpdateInput> = {};
+
+        /**
+         * @desc Adding basic type updates
+         */
+
+        if(data.name) update.name = data.name;
+        if(data.description) update.description = data.description;
+        if(data.tier_level) update.tier_level = data.tier_level;
+
+        /**
+         * @desc complex updates
+         */
+
+        if(data.content) {
+            update.content = {
+                update: [],
+                create: []
+            }
+            
+            data.content.forEach((c) => {
+                const data : Content = {
+                    type: c.type,
+                    alt: c.alt,
+                    text: c.text,
+                    key: c.key,
+                    url: c.url
+                };
+
+                if(c.id && Array.isArray(update.content?.update)) update.content?.update.push({
+                    where: {
+                        id: c.id
+                    },
+                    data
+                })
+
+                if(!c.id && Array.isArray(update.content?.create)) update.content?.create.push({
+                    ...data
+                })
+            });
+        }
+
+        if(data.multiple_choices) {
+            update.multiple_choice_answers = {
+                update: [],
+                create: []
+            }
+            
+            data.multiple_choices.forEach((m) => {
+                const data = {
+                    type: m.content.type,
+                    alt: m.content.alt,
+                    text: m.content.text,
+                    key: m.content.key,
+                    url: m.content.url,
+                    correct: m.is_correct
+                };
+
+                if(m.id && Array.isArray(update.multiple_choice_answers?.update)) update.multiple_choice_answers?.update.push({
+                    where: {
+                        id: m.id
+                    },
+                    data
+                })
+
+                if(!m.id && Array.isArray(update.multiple_choice_answers?.create)) update.multiple_choice_answers?.create.push({
+                    ...data
+                })
+            });
+        }
+
+        const result = await this.data_access.question.update({
+            where: {
+                id
+            },
+            data: update,
+            include: {
+                multiple_choice_answers: true,
+                content: true,
+                topics: {
+                    include: {
+                        topic: true
+                    }
+                }
+            }
+        })
+
+        return fitQuestionPrismaRepositoryToEntity(result)
+    };
 
     async findAll<QuestionSortKeys>(query: QueryInput<IQuestion>, sort: Sort<QuestionSortKeys>): Promise<FindResponse<IQuestion>> {
         logger.debug(`Enter PrismaQuestionRepository.find()`);

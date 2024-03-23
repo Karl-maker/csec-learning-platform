@@ -231,6 +231,7 @@ export function fitQuestionPrismaRepositoryToEntity(question: {
             }
         }
 
+        if(m.id) result.id = m.id;
         if(m.url) result.content.url = m.url;
         if(m.alt) result.content.alt = m.alt;
         if(m.key) result.content.alt = m.key;
@@ -245,6 +246,7 @@ export function fitQuestionPrismaRepositoryToEntity(question: {
             type: h.hint.type as ContentType
         };
 
+        if(h.hint.id) result.id = h.hint.id;
         if(h.hint.text) result.text = h.hint.text;
         if(h.hint.alt) result.alt = h.hint.alt;
         if(h.hint.key) result.key = h.hint.key;

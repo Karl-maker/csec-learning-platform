@@ -11,6 +11,7 @@ export type QuestionType = {
     tier_level: number;
 }
 export type QuestionMultipleChoiceType = {
+    id?: number;
     is_correct: boolean;
     content: Content;
 }
