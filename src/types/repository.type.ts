@@ -15,6 +15,10 @@ export type FindResponse<T> = {
     data: T[];
     amount: number;
 }
+export type SearchResponse<T> = {
+    data: T[];
+    amount: number;
+}
 export type QueryInput<T> = {
 }
 export type ConnectById = {

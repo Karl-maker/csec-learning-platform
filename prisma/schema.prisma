@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex", "relationJoins"]
 }
 
 datasource db {
@@ -26,6 +27,9 @@ model Question {
   hints                   QuestionHint[]
   topics                  QuestionTopic[]
   exams                   ExamQuestion[]
+
+  @@fulltext([name])
+  @@fulltext([name, description])
 }
 
 model QuestionContent {
@@ -36,6 +40,8 @@ model QuestionContent {
   question    Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
   question_id Int
   created_at  DateTime @default(now())
+
+  @@fulltext([text])
 }
 
 model MultipleChoiceAnswer {
@@ -56,6 +62,8 @@ model Hint {
   type       String
   created_at DateTime       @default(now())
   questions  QuestionHint[]
+
+  @@fulltext([text])
 }
 
 model QuestionHint {
@@ -76,6 +84,8 @@ model Subject {
   description String             @db.VarChar(1000)
   created_at  DateTime           @default(now())
   subjects    SubjectBreakdown[]
+
+  @@fulltext([name, description])
 }
 
 model SubjectBreakdown {
@@ -87,6 +97,8 @@ model SubjectBreakdown {
   subject_id  Int
   created_at  DateTime @default(now())
   exams       Exam[]
+
+  @@fulltext([name, description])
 }
 
 model Course {
@@ -97,6 +109,8 @@ model Course {
   subject_breakdown_id Int
   created_at           DateTime         @default(now())
   topics               CourseTopic[]
+
+  @@fulltext([name, description])
 }
 
 model Topic {
@@ -106,6 +120,8 @@ model Topic {
   created_at  DateTime        @default(now())
   courses     CourseTopic[]
   questions   QuestionTopic[]
+
+  @@fulltext([name, description])
 }
 
 model CourseTopic {
@@ -132,6 +148,7 @@ model QuestionTopic {
 
 model Exam {
   id            Int              @id @default(autoincrement())
+  name          String
   exam_board    ExamBoard        @relation(fields: [exam_board_id], references: [id], onDelete: Cascade)
   exam_board_id Int
   tier_level    Int              @default(1)

@@ -31,5 +31,9 @@ export type FindAllQuestionUseCaseResponse = {
     questions: Question[];
     amount: number;
 }
+export type SearchQuestionUseCaseResponse = {
+    questions: Question[];
+    amount: number;  
+}
 export type TipType = Content;
 export type QuestionSortKeys = 'id' | 'created_at';

@@ -1,6 +1,8 @@
 import QuestionRepository from "../../adapters/repositories/question/prisma.question.repository";
+import IQuestion from "../../entity/question/interface.question.entity";
+import MultipleChoiceQuestion from "../../entity/question/multiple.choice.question.entity";
 import Question from "../../entity/question/question.entity";
-import { CreateQuestionUseCaseResponse, FindAllQuestionUseCaseResponse, QuestionBeforeSavedType, QuestionSortKeys } from "../../types/question.type";
+import { CreateQuestionUseCaseResponse, FindAllQuestionUseCaseResponse, QuestionBeforeSavedType, QuestionSortKeys, SearchQuestionUseCaseResponse } from "../../types/question.type";
 import { QueryInput, Sort } from "../../types/repository.type";
 
 export default class QuestionUseCase {
@@ -11,7 +13,10 @@ export default class QuestionUseCase {
     }
 
     async create(data: QuestionBeforeSavedType): Promise<CreateQuestionUseCaseResponse> {
-        const question = new Question(data);
+        let question: Question;
+
+        question = new MultipleChoiceQuestion(data);
+
 
         try {
             if(!question.isDifficultyLevelInRange()) {
@@ -36,6 +41,18 @@ export default class QuestionUseCase {
     async findAll(query: QueryInput<Question>, sort: Sort<QuestionSortKeys>): Promise<FindAllQuestionUseCaseResponse> {
         try {
             const result = await this.repository.findAll(query, sort);
+            return {
+                amount: result.amount,
+                questions: result.data || []
+            }
+        } catch(err) {
+            throw err;
+        }
+    }
+
+    async search(search: string, sort: Sort<QuestionSortKeys>): Promise<SearchQuestionUseCaseResponse> {
+        try {
+            const result = await this.repository.search(search, sort);
             return {
                 amount: result.amount,
                 questions: result.data || []
