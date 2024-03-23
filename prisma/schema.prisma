@@ -27,6 +27,7 @@ model Question {
   hints                   QuestionHint[]
   topics                  QuestionTopic[]
   exams                   ExamQuestion[]
+  QuizQuestion            QuizQuestion[]
 
   @@fulltext([name])
   @@fulltext([name, description])
@@ -126,6 +127,7 @@ model Topic {
   created_at  DateTime        @default(now())
   courses     CourseTopic[]
   questions   QuestionTopic[]
+  QuizTopic   QuizTopic[]
 
   @@fulltext([name, description])
 }
@@ -184,4 +186,35 @@ model ExamBoard {
   description String
   founded     DateTime
   exams       Exam[]
+}
+
+// Quiz
+
+model Quiz {
+  id         Int            @id @default(autoincrement())
+  type       String
+  tier_level Int
+  topics     QuizTopic[]
+  questions  QuizQuestion[]
+  created_at DateTime       @default(now())
+}
+
+model QuizTopic {
+  quiz        Quiz     @relation(fields: [quiz_id], references: [id], onDelete: Cascade)
+  quiz_id     Int
+  topic       Topic    @relation(fields: [topic_id], references: [id], onDelete: Cascade)
+  topic_id    Int
+  assigned_at DateTime @default(now())
+
+  @@id([quiz_id, topic_id])
+}
+
+model QuizQuestion {
+  quiz        Quiz     @relation(fields: [quiz_id], references: [id], onDelete: Cascade)
+  quiz_id     Int
+  question    Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  question_id Int
+  assigned_at DateTime @default(now())
+
+  @@id([quiz_id, question_id])
 }
