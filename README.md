@@ -1,4 +1,4 @@
-# Project Name
+# Learner Hub 
 
 Welcome to CSEC LearnerHub!
 
