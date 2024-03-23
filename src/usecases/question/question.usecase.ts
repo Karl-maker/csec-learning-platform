@@ -171,7 +171,7 @@ export default class QuestionUseCase {
         
     };
 
-    async findAll(query: QueryInput<QuestionFilter>, sort: Sort<QuestionSortKeys>): Promise<FindAllUseCaseResponse<IQuestion>> {
+    async findAll(query: QueryInput<IQuestion>, sort: Sort<QuestionSortKeys>): Promise<FindAllUseCaseResponse<IQuestion>> {
         try {
             const result = await this.repository.findAll(query, sort);
             return {

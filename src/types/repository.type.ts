@@ -19,7 +19,7 @@ export type SearchResponse<T> = {
     data: T[];
     amount: number;
 }
-export type QueryInput<Q> = Record<keyof Q, string[] | null>;
+export type QueryInput<Q> = Partial<Record<keyof Q, string[] | null>>;
 export type ConnectById = {
     id: number;
 }
