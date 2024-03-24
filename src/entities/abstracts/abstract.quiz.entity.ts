@@ -23,14 +23,16 @@ abstract class AbstractQuiz implements Quiz {
         }
     }
 
-    async generate <Repository extends QuestionRepository<any>>(amount_of_questions: number, repository: Repository) : Promise<void> {
+    // async generate <Repository extends QuestionRepository<any>, Quiz extends AbstractQuiz>(amount_of_questions: number, repository: Repository) : Promise<Quiz> {
         
-        const questions = await repository.findForQuizGeneration([this.tier_level], this.topics.map((t) => t.name), amount_of_questions);
+    //     const questions = await repository.findForQuizGeneration([this.tier_level], this.topics.map((t) => t.name), amount_of_questions);
 
-        this.questions = {
-            outline: questions.map((q) => ({ question_id: Number(q.id) })),
-            details: arrayToRecord<Question>(questions)
-        }
-    };
+    //     this.questions = {
+    //         outline: questions.map((q) => ({ question_id: Number(q.id) })),
+    //         details: arrayToRecord<Question>(questions)
+    //     }
+
+    //     return this;
+    // };
 }
 export default AbstractQuiz;

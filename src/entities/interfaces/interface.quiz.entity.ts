@@ -1,6 +1,7 @@
 import QuestionRepository from "../../adapters/repositories/interfaces/interface.question.respository";
 import QuizRepository from "../../adapters/repositories/interfaces/interface.quiz.repository";
 import { QuizTypes } from "../../types/quiz.type";
+import AbstractQuiz from "../abstracts/abstract.quiz.entity";
 import Question from "./interface.question.entity";
 
 export default interface Quiz {
@@ -18,6 +19,4 @@ export default interface Quiz {
         }[];
         details?: Record<number, Question>;
     };
-
-    generate: <Repository extends QuestionRepository<any>>(amount_of_questions: number, repository: Repository) => Promise<void>;
 }

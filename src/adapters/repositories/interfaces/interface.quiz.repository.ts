@@ -3,4 +3,5 @@ import IRepository from "./interface.repository";
 
 export default interface QuizRepository<Model> extends IRepository<Quiz> {
     database: Model;
+    generate: (amount: number, entity: Quiz) => Promise<Quiz>;
 }

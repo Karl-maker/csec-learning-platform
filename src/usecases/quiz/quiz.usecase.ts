@@ -31,10 +31,10 @@ export default class QuestionUseCase {
             range
         });
 
-        await quiz.generate(amount_of_questions, this.questionRepository);
+        const generated_quiz = await this.quizRepository.generate(amount_of_questions, quiz)
 
         return {
-            data: quiz,
+            data: generated_quiz,
             message: `Quiz Generated Successfully`,
             success: true
         }
