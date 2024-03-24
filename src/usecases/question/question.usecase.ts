@@ -10,11 +10,11 @@ import { CreateUseCaseResponse, FindAllUseCaseResponse, SearchUseCaseResponse, U
 import { Content } from "../../types/utils.type";
 
 export default class QuestionUseCase {
-    private repository: QuestionRepository<any>;
+    private questionRepository: QuestionRepository<any>;
     private fileRepository: IUploadRepository;
 
     constructor(repository: QuestionRepository<any>, fileRepository: IUploadRepository) {
-        this.repository = repository; 
+        this.questionRepository = repository; 
         this.fileRepository = fileRepository;
     }
 
@@ -159,7 +159,7 @@ export default class QuestionUseCase {
                 };
             };
 
-            const result = await this.repository.save(question);
+            const result = await this.questionRepository.save(question);
             return {
                 data: result,
                 success: true,
@@ -173,7 +173,7 @@ export default class QuestionUseCase {
 
     async findAll(query: QueryInput<Question>, sort: Sort<QuestionSortKeys>): Promise<FindAllUseCaseResponse<Question>> {
         try {
-            const result = await this.repository.findAll(query, sort);
+            const result = await this.questionRepository.findAll(query, sort);
             return {
                 amount: result.amount,
                 data: result.data || []
@@ -275,7 +275,7 @@ export default class QuestionUseCase {
                     message: 'Difficulty must be between 1 - 20'
                 }
             }
-            const result = await this.repository.updateById(id, question);
+            const result = await this.questionRepository.updateById(id, question);
             return {
                 data: result,
                 success: true,
@@ -289,7 +289,7 @@ export default class QuestionUseCase {
 
     async search(search: string, sort: Sort<QuestionSortKeys>): Promise<SearchUseCaseResponse<Question>> {
         try {
-            const result = await this.repository.search(search, sort);
+            const result = await this.questionRepository.search(search, sort);
             return {
                 amount: result.amount,
                 data: result.data || []

@@ -1,7 +1,6 @@
 import { QuizType } from "../../types/quiz.type";
 import AbstractQuiz from "../abstracts/abstract.quiz.entity";
 import Quiz from "../interfaces/interface.quiz.entity";
-
 /**
  * @desc Entity type for Quiz
  */
