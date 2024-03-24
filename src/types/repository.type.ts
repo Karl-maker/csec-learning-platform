@@ -1,29 +1,29 @@
-export type Sort<T> = {
+export type Sort<DataType> = {
     page: {
         number: number;
         size: number;
     };
     field: {
         order: 'asc' | 'desc';
-        key: T
+        key: DataType
     }
 } 
 export type MutatedData = {
     affected: number;
 }
-export type FindResponse<T> = {
-    data: T[];
+export type FindResponse<DataType> = {
+    data: DataType[];
     amount: number;
 }
-export type SearchResponse<T> = {
-    data: T[];
+export type SearchResponse<DataType> = {
+    data: DataType[];
     amount: number;
 }
-export type QueryInput<Q> = Partial<Record<keyof Q, string[] | null>>;
+export type QueryInput<DataType> = Partial<Record<keyof DataType, string[] | null>>;
 export type ConnectById = {
     id: number;
 }
-export type FoundData<T> = {
+export type FoundData<DataType> = {
     amount: number;
-    data: T[];
+    data: DataType[];
 }

@@ -1,18 +1,18 @@
-export type FindAllUseCaseResponse<T> = {
-    data: T[];
+export type FindAllUseCaseResponse<DataType> = {
+    data: DataType[];
     amount: number;
 }
-export type SearchUseCaseResponse<T> = {
-    data: T[];
+export type SearchUseCaseResponse<DataType> = {
+    data: DataType[];
     amount: number;  
 }
-export type CreateUseCaseResponse<T> = {
-    data?: T;
+export type CreateUseCaseResponse<DataType> = {
+    data?: DataType;
     success: boolean;
     message?: string;
 }
-export type UpdateUseCaseResponse<T> = {
-    data?: T;
+export type UpdateUseCaseResponse<DataType> = {
+    data?: DataType;
     success: boolean;
     message?: string;  
 }

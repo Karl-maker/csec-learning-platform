@@ -1,24 +1,24 @@
 import CreateQuestionDTO from "../../adapters/presenters/dto/question/question.create.dto";
 import UpdateQuestionDTO from "../../adapters/presenters/dto/question/question.update.dto";
-import QuestionRepository from "../../adapters/repositories/prisma/prisma.question.repository";
+import QuestionRepository from "../../adapters/repositories/interfaces/interface.question.respository";
 import MultipleChoiceQuestion from "../../entities/concretes/multiple.choice.question.entity";
-import IQuestion from "../../entities/interfaces/interface.question.entity";
+import Question from "../../entities/interfaces/interface.question.entity";
 import IUploadRepository from "../../services/file/interface.file.storage.service";
-import { QuestionFilter, QuestionMultipleChoiceType, QuestionSortKeys, QuestionTopicsType, QuestionType } from "../../types/question.type";
+import { QuestionMultipleChoiceType, QuestionSortKeys, QuestionTopicsType, QuestionType } from "../../types/question.type";
 import { QueryInput, Sort } from "../../types/repository.type";
 import { CreateUseCaseResponse, FindAllUseCaseResponse, SearchUseCaseResponse, UpdateUseCaseResponse } from "../../types/usecase.type";
 import { Content } from "../../types/utils.type";
 
 export default class QuestionUseCase {
-    private repository: QuestionRepository;
+    private repository: QuestionRepository<any>;
     private fileRepository: IUploadRepository;
 
-    constructor(repository: QuestionRepository, fileRepository: IUploadRepository) {
+    constructor(repository: QuestionRepository<any>, fileRepository: IUploadRepository) {
         this.repository = repository; 
         this.fileRepository = fileRepository;
     }
 
-    async create(data: CreateQuestionDTO): Promise<CreateUseCaseResponse<IQuestion>> {
+    async create(data: CreateQuestionDTO): Promise<CreateUseCaseResponse<Question>> {
 
         const {
             name,
@@ -30,7 +30,7 @@ export default class QuestionUseCase {
             topics
         } = data;
 
-        let question: IQuestion;
+        let question: Question;
 
         // Fit Data
 
@@ -171,7 +171,7 @@ export default class QuestionUseCase {
         
     };
 
-    async findAll(query: QueryInput<IQuestion>, sort: Sort<QuestionSortKeys>): Promise<FindAllUseCaseResponse<IQuestion>> {
+    async findAll(query: QueryInput<Question>, sort: Sort<QuestionSortKeys>): Promise<FindAllUseCaseResponse<Question>> {
         try {
             const result = await this.repository.findAll(query, sort);
             return {
@@ -183,7 +183,7 @@ export default class QuestionUseCase {
         }
     }
 
-    async updateById(id: number, data: UpdateQuestionDTO): Promise<UpdateUseCaseResponse<IQuestion>> {
+    async updateById(id: number, data: UpdateQuestionDTO): Promise<UpdateUseCaseResponse<Question>> {
 
         const {
             name,
@@ -287,7 +287,7 @@ export default class QuestionUseCase {
         
     };
 
-    async search(search: string, sort: Sort<QuestionSortKeys>): Promise<SearchUseCaseResponse<IQuestion>> {
+    async search(search: string, sort: Sort<QuestionSortKeys>): Promise<SearchUseCaseResponse<Question>> {
         try {
             const result = await this.repository.search(search, sort);
             return {

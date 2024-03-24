@@ -218,3 +218,4 @@ model QuizQuestion {
 
   @@id([quiz_id, question_id])
 }
+

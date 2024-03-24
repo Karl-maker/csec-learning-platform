@@ -1,20 +1,21 @@
 import logger from "../../../utils/loggers/logger.util";
-import IQuestionRepository from "../interfaces/interface.question.respository";
+import QuestionRepository from "../interfaces/interface.question.respository";
 import { PrismaClient, Prisma } from '@prisma/client'
-import { fitQuestionEntityToPrismaCreateInput, fitQuestionPrismaRepositoryToEntity } from "../../../utils/question/data.fit";
-import { Sort, FoundData, QueryInput, FindResponse, SearchResponse } from "../../../types/repository.type";
-import { QuestionFilter, QuestionSortKeys, QuestionType } from "../../../types/question.type";
-import IQuestion from "../../../entities/interfaces/interface.question.entity";
-import { Content } from "../../../types/utils.type";
+import { Sort, QueryInput, FindResponse, SearchResponse } from "../../../types/repository.type";
+import { QuestionModel, QuestionMultipleChoiceType, QuestionTopicsType, QuestionType, TipType } from "../../../types/question.type";
+import Question from "../../../entities/interfaces/interface.question.entity";
+import { Content, ContentType } from "../../../types/utils.type";
+import MultipleChoiceQuestion from "../../../entities/concretes/multiple.choice.question.entity";
+import generateRandomOffsets from "../../../utils/generate.random.offset.util";
 
-export default class PrismaQuestionRepository implements IQuestionRepository<PrismaClient> {
-    data_access: PrismaClient;
+export default class PrismaQuestionRepository implements QuestionRepository<PrismaClient> {
+    database: PrismaClient;
 
     constructor(prisma: PrismaClient) {
-        this.data_access = prisma
+        this.database = prisma
     }
 
-    async updateById(id: number, data: Partial<QuestionType>): Promise<IQuestion> {
+    async updateById(id: number, data: Partial<QuestionType>): Promise<Question> {
 
         let update: Prisma.XOR<Prisma.QuestionUpdateInput, Prisma.QuestionUncheckedUpdateInput> = {};
 
@@ -87,7 +88,7 @@ export default class PrismaQuestionRepository implements IQuestionRepository<Pri
             });
         }
 
-        const result = await this.data_access.question.update({
+        const result = await this.database.question.update({
             where: {
                 id
             },
@@ -103,10 +104,10 @@ export default class PrismaQuestionRepository implements IQuestionRepository<Pri
             }
         })
 
-        return fitQuestionPrismaRepositoryToEntity(result)
+        return this.fitModelToEntity(result)
     };
 
-    async findAll<QuestionSortKeys>(query: QueryInput<IQuestion>, sort: Sort<QuestionSortKeys>): Promise<FindResponse<IQuestion>> {
+    async findAll<QuestionSortKeys>(query: QueryInput<Question>, sort: Sort<QuestionSortKeys>): Promise<FindResponse<Question>> {
         logger.debug(`Enter PrismaQuestionRepository.find()`);
     
         const { page, field } = sort;
@@ -118,7 +119,7 @@ export default class PrismaQuestionRepository implements IQuestionRepository<Pri
         //if(query.only) only = query.only as QuestionFilterBy;
 
         const [totalCount, results] = await Promise.all([
-            await this.data_access.question.count({
+            await this.database.question.count({
                 where: {
                     topics: only.topics ? {
                         some: {
@@ -131,7 +132,7 @@ export default class PrismaQuestionRepository implements IQuestionRepository<Pri
                     } : {}
                 } // Add your query conditions here if needed
             }),
-            await this.data_access.question.findMany({
+            await this.database.question.findMany({
                 where: {
                     topics: only.topics ? {
                         some: {
@@ -166,7 +167,7 @@ export default class PrismaQuestionRepository implements IQuestionRepository<Pri
         ])
     
         // Assuming fitQuestionPrismaRepositoryToEntity is a function that maps the result to the desired type
-        const mappedResults = results.map((result) => fitQuestionPrismaRepositoryToEntity(result));
+        const mappedResults = results.map((result) => this.fitModelToEntity(result));
     
         return {
             data: mappedResults,
@@ -174,7 +175,7 @@ export default class PrismaQuestionRepository implements IQuestionRepository<Pri
         };
     }
 
-    async search<QuestionSortKeys>(search: string, sort: Sort<QuestionSortKeys>): Promise<SearchResponse<IQuestion>> {
+    async search<QuestionSortKeys>(search: string, sort: Sort<QuestionSortKeys>): Promise<SearchResponse<Question>> {
         logger.debug(`Enter PrismaQuestionRepository.search()`);
     
         const { page, field } = sort;
@@ -237,10 +238,10 @@ export default class PrismaQuestionRepository implements IQuestionRepository<Pri
         };
 
         const [totalCount, results] = await Promise.all([
-            await this.data_access.question.count({
+            await this.database.question.count({
                 where: query
             }),
-            await this.data_access.question.findMany({
+            await this.database.question.findMany({
                 where: query,
                 include: {
                     multiple_choice_answers: true,
@@ -260,7 +261,7 @@ export default class PrismaQuestionRepository implements IQuestionRepository<Pri
         ]);
         
         // Assuming fitQuestionPrismaRepositoryToEntity is a function that maps the result to the desired type
-        const mappedResults = results.map((result) => fitQuestionPrismaRepositoryToEntity(result));
+        const mappedResults = results.map((result) => this.fitModelToEntity(result));
     
         return {
             data: mappedResults,
@@ -268,11 +269,11 @@ export default class PrismaQuestionRepository implements IQuestionRepository<Pri
         };
     }
     
-    async save(question: IQuestion): Promise<IQuestion> {
+    async save(question: Question): Promise<Question> {
         logger.debug(`Enter PrismaQuestionRepository.save()`);
 
-        const result = await this.data_access.question.create({
-            data: fitQuestionEntityToPrismaCreateInput(question),
+        const result = await this.database.question.create({
+            data: this.fitEntityToModelCreateQuery(question),
             include: {
                 multiple_choice_answers: true,
                 content: true,
@@ -283,6 +284,274 @@ export default class PrismaQuestionRepository implements IQuestionRepository<Pri
                 }
             }
         })
-        return fitQuestionPrismaRepositoryToEntity(result);
+        return this.fitModelToEntity(result);
     }
+
+    async findForQuizGeneration(tiers: number[], topics: string[], amount: number): Promise<Question[]> {
+        try {
+            // Get the total number of questions in the database
+            const where: Prisma.QuestionWhereInput = {
+                tier_level: {
+                    in: tiers,
+                },
+                topics: {
+                    some: {
+                        topic: {
+                            name: {
+                                in: topics,
+                            },
+                        }
+                    },
+                },
+            }
+    
+            const totalQuestionsCount = await this.database.question.count({
+                where
+            });
+
+            // Generate random offsets for multiple questions
+            const randomOffsets = generateRandomOffsets(totalQuestionsCount, amount);
+    
+            // Fetch multiple random questions
+            const randomQuestions = await Promise.all(
+                randomOffsets.map((offset) =>
+                    this.database.question.findFirst({
+                        where,
+                        skip: offset,
+                        include: {
+                            multiple_choice_answers: true,
+                            content: true,
+                            topics: {
+                                include: {
+                                    topic: true
+                                }
+                            },
+                            hints: {
+                                include: {
+                                    hint: true
+                                }
+                            }
+                        },
+                    })
+                )
+            );
+    
+            return randomQuestions
+                .map((q) => q ? this.fitModelToEntity(q) as Question : null)
+                .filter((q): q is Question => q !== null);
+                
+        } catch (error) {
+            logger.error('Error finding random questions:', error);
+            throw new Error('Error finding random questions');
+        }
+    }
+
+    fitEntityToModelCreateQuery(question: Question): Prisma.QuestionCreateInput {
+    
+        /**
+         * @desc create content for question
+         */
+
+        const content = question.content.map((c) => {
+            const response: {
+                text: null | string;
+                type: string;
+                url: null | string;
+                key: null | string;
+                alt: null | string;
+            } = {
+                text: null,
+                type: '',
+                url: null,
+                key: null,
+                alt: null
+            };
+            response.type = c.type;
+            if(c.url) response.url = c.url;
+            if(c.text) response.text = c.text;
+            if(c.alt) response.alt = c.alt;
+            if(c.key) response.key = c.key;
+
+            return response;
+        })
+
+        /**
+         * @desc create answers for question
+         */
+
+        const multiple_choice = question.multiple_choice ? question.multiple_choice.map((m) => {
+            const response: {
+                text: null | string;
+                type: string;
+                url: null | string;
+                correct: boolean;
+            } = {
+                text: null,
+                type: '',
+                url: null,
+                correct: false
+            };
+            response.type = m.content.type;
+            response.correct = m.is_correct
+            if(m.content.url) response.url = m.content.url;
+            if(m.content.text) response.text = m.content.text;
+            return response;
+        }) : null;
+
+        /**
+         * @desc Connect OR Create Tips / Hints
+         */
+
+        const hints = question.tips ? question.tips.map((tip) => {
+            let response: {
+                hint: {
+                    connect?: {
+                        id: number;
+                    };
+                    create?: {
+                        text: string | null;
+                        url: string | null;
+                        type: string;
+                    };
+                };
+            };
+
+            response = tip.id ? { 
+                hint: { 
+                    connect: { id: tip.id as number } 
+                } 
+            } : {
+                hint: { 
+                    create: { 
+                        text: tip.text || null,
+                        url: tip.url || null,
+                        type: tip.type
+                    } 
+                }   
+            }
+
+            return response
+        }) : [];
+
+        /**
+         * @desc Connect OR Create Topics
+         */
+
+        const topics = question.topics ? question.topics.map((topic) => {
+            let response: {
+                topic: {
+                    connect?: {
+                        id: number;
+                    };
+                    create?: {
+                        name: string;
+                        description: string;
+                    };
+                };
+            };
+
+            response = topic.id ? { 
+                topic: { 
+                    connect: { id: topic.id as number } 
+                } 
+            } : {
+                topic: { 
+                    create: { 
+                        name: topic.name,
+                        description: topic.description,
+                    } 
+                }   
+            }
+
+            return response
+        }) : [];
+
+        return {
+            name: question.name,
+            description: question.description,
+            tier_level: question.tier_level,
+            content: {
+                create: content
+            },
+            multiple_choice_answers: {
+                create: multiple_choice ? multiple_choice : []
+            },
+            hints: {
+                create: hints
+            },
+            topics: {
+                create: topics
+            } 
+        };
+    
+
+    };
+
+    fitModelToEntity(question: QuestionModel) : Question {
+
+        const content: Content[] = question.content.map((c) => {
+            const result: Content = {
+                id: c.id,
+                type: c.type as ContentType,
+            }
+    
+            if(c.text) result.text = c.text
+            if(c.url) result.url = c.url
+            if(c.key) result.key = c.key
+            if(c.alt) result.key = c.alt
+    
+            return result
+        });
+    
+        const topics: QuestionTopicsType[] = question.topics ? question.topics.map((t) => {
+            return {
+                id: t.topic.id,
+                name: t.topic.name,
+                description: t.topic.description
+            }
+        }) : [];
+    
+        const multiple_choices: QuestionMultipleChoiceType[] | undefined = question.multiple_choice_answers ? question.multiple_choice_answers.map((m) => {
+            const result: QuestionMultipleChoiceType = {
+                is_correct: m.correct,
+                content: {
+                    type: m.type as ContentType
+                }
+            }
+    
+            if(m.id) result.id = m.id;
+            if(m.url) result.content.url = m.url;
+            if(m.alt) result.content.alt = m.alt;
+            if(m.key) result.content.alt = m.key;
+            if(m.text) result.content.text = m.text;
+    
+            return result;
+        }) : undefined;
+    
+        const tips: TipType[] | undefined = question.hints ? question.hints.map((h) => {
+            const result: TipType = {
+                id: h.hint.id,
+                type: h.hint.type as ContentType
+            };
+    
+            if(h.hint.id) result.id = h.hint.id;
+            if(h.hint.text) result.text = h.hint.text;
+            if(h.hint.alt) result.alt = h.hint.alt;
+            if(h.hint.key) result.key = h.hint.key;
+            if(h.hint.url) result.url = h.hint.url;
+    
+            return result;
+        }) : undefined;
+    
+        return new MultipleChoiceQuestion({
+            content,
+            topics,
+            multiple_choices,
+            tips,
+            tier_level: question.tier_level,
+            id: question.id,
+            name: question.name,
+            description: question.description,
+        })
+    };
 }

@@ -1,7 +1,7 @@
 import { QuestionMultipleChoiceType, QuestionTopicsType, QuestionType, TipType } from "../../types/question.type";
 import { Content } from "../../types/utils.type";
 
-interface IQuestion {
+interface Question {
     id: string | number | null;
     name: string;
     description: string;
@@ -15,4 +15,4 @@ interface IQuestion {
 
 }
 
-export default IQuestion;
+export default Question;

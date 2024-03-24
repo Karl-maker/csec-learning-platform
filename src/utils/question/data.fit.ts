@@ -2,9 +2,14 @@ import { Prisma } from "@prisma/client";
 import { Content, ContentType } from "../../types/utils.type";
 import { QuestionMultipleChoiceType, QuestionTopicsType, TipType } from "../../types/question.type";
 import MultipleChoiceQuestion from "../../entities/concretes/multiple.choice.question.entity";
-import IQuestion from "../../entities/interfaces/interface.question.entity";
+import Question from "../../entities/interfaces/interface.question.entity";
 
-export function fitQuestionEntityToPrismaCreateInput(question: IQuestion): Prisma.QuestionCreateInput {
+/**
+ * @author Karl-Johan Bailey
+ * @deprecated removed in future
+ */
+
+export function fitQuestionEntityToPrismaCreateInput(question: Question): Prisma.QuestionCreateInput {
     
     /**
      * @desc create content for question
@@ -145,6 +150,11 @@ export function fitQuestionEntityToPrismaCreateInput(question: IQuestion): Prism
 
 }
 
+/**
+ * @author Karl-Johan Bailey
+ * @deprecated removed in future
+ */
+
 export function fitQuestionPrismaRepositoryToEntity(question: {
     id: number;
     name: string;
@@ -199,7 +209,7 @@ export function fitQuestionPrismaRepositoryToEntity(question: {
         topic_id: number;
         assigned_at: Date;
     })[];
-}): IQuestion {
+}): Question {
 
     const content: Content[] = question.content.map((c) => {
         const result: Content = {

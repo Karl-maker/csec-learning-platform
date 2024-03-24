@@ -14,4 +14,4 @@ const PORT = Number(process.env.PORT) || 3000;
 app.use(express.json())
 app.use(ROUTES.QUESTION, QuestionRoutes.default);
 
-app.listen(PORT, () => logger.info("server running on port: " + PORT + " 🔥🔥🔥"))
+app.listen(PORT, () => logger.info("🚀 server running on port: " + PORT + ""))

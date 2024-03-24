@@ -1,8 +1,8 @@
 import { QuestionMultipleChoiceType, QuestionTopicsType, QuestionType, TipType } from "../../types/question.type";
 import { Content } from "../../types/utils.type";
-import IQuestion from "../interfaces/interface.question.entity";
+import Question from "../interfaces/interface.question.entity";
 
-abstract class AbstractQuestion implements IQuestion {
+abstract class AbstractQuestion implements Question {
     public id: number | null;
     public name: string;
     public description: string;
