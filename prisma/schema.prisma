@@ -27,7 +27,7 @@ model Question {
   hints                   QuestionHint[]
   topics                  QuestionTopic[]
   exams                   ExamQuestion[]
-  QuizQuestion            QuizQuestion[]
+  quizzes           QuizQuestion[]
 
   @@fulltext([name])
   @@fulltext([name, description])
@@ -127,7 +127,7 @@ model Topic {
   created_at  DateTime        @default(now())
   courses     CourseTopic[]
   questions   QuestionTopic[]
-  QuizTopic   QuizTopic[]
+  quizzes   QuizTopic[]
 
   @@fulltext([name, description])
 }
@@ -219,3 +219,49 @@ model QuizQuestion {
   @@id([quiz_id, question_id])
 }
 
+// Account
+
+model Account {
+  id         Int      @id @default(autoincrement())
+  email      String
+  password   String
+  created_at DateTime @default(now())
+}
+
+model Student {
+  id         Int      @id @default(autoincrement())
+  username   String   @unique
+  school_id  Int?
+  school     School?  @relation(fields: [school_id], references: [id], onDelete: SetNull)
+  created_at DateTime @default(now())
+}
+
+model School {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String
+  logo        String?
+  location_id Int?
+  location    Location? @relation(fields: [location_id], references: [id], onDelete: SetNull)
+  created_at  DateTime  @default(now())
+  student     Student[]
+}
+
+model Location {
+  id               Int      @id @default(autoincrement())
+  country          Country? @relation(fields: [country_id], references: [id], onDelete: SetNull)
+  country_id       Int?
+  state            String?
+  city             String
+  street_address_1 String
+  street_address_2 String
+  longitude        Decimal?
+  latitude         Decimal?
+  school           School[]
+}
+
+model Country {
+  id       Int        @id @default(autoincrement())
+  name     String     @unique
+  location Location[]
+}
