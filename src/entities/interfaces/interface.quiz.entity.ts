@@ -10,8 +10,8 @@ export default interface Quiz {
     tier_level: number;
     range: number;
     topics: {
-        id: number | null;
-        name: string;
+        id: number;
+        name?: string;
     }[];
     questions: {
         outline: {
@@ -19,4 +19,6 @@ export default interface Quiz {
         }[];
         details?: Record<number, Question>;
     };
+
+    addQuestion: (question: Question) => void;
 }

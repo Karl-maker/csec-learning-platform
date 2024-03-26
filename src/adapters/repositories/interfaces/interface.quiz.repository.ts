@@ -1,7 +1,6 @@
 import Quiz from "../../../entities/interfaces/interface.quiz.entity";
-import IRepository from "./interface.repository";
+import { IReadOnlyRepository } from "./interface.repository";
 
-export default interface QuizRepository<Model> extends IRepository<Quiz> {
+export default interface QuizRepository<Model> extends IReadOnlyRepository<Quiz> {
     database: Model;
-    generate: (amount: number, entity: Quiz) => Promise<Quiz>;
 }

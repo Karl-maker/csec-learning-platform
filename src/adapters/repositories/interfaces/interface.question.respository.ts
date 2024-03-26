@@ -7,5 +7,5 @@ export default interface QuestionRepository<Model> extends IRepository<Question>
 
     // @override  
     fitModelToEntity(question: QuestionModel) : Question;
-    findForQuizGeneration(tiers: number[], topics: string[], amount: number): Promise<Question[]>;
+    findForQuizGeneration(tiers: number[], topics: number[], amount: number): Promise<Question[]>;
 }

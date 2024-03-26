@@ -1,11 +1,9 @@
-import { QuizTypes } from "../../../../types/quiz.type";
-
 interface CreateQuizDTO {
-    type: QuizTypes;
     tier_level: number;
-    topics: Array<string>;
+    topics: Array<number>;
     range: number;
     amount_of_questions: number;
+    questions?: number[];
 }
 
 export default CreateQuizDTO;

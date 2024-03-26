@@ -287,7 +287,9 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
         return this.fitModelToEntity(result);
     }
 
-    async findForQuizGeneration(tiers: number[], topics: string[], amount: number): Promise<Question[]> {
+    async findForQuizGeneration(tiers: number[], topics: number[], amount: number): Promise<Question[]> {
+        logger.debug(`Enter PrismaQuestionRepository.findForQuizGeneration()`);
+        tiers = tiers.filter((t) => t > 0)
         try {
             // Get the total number of questions in the database
             const where: Prisma.QuestionWhereInput = {
@@ -297,7 +299,7 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
                 topics: {
                     some: {
                         topic: {
-                            name: {
+                            id: {
                                 in: topics,
                             },
                         }
@@ -309,13 +311,16 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
                 where
             });
 
+            logger.debug(`PrismaQuestionRepository.findForQuizGeneration().totalQuestionsCount: `, totalQuestionsCount);
+
             // Generate random offsets for multiple questions
             const randomOffsets = generateRandomOffsets(totalQuestionsCount, amount);
+
+            logger.debug(`PrismaQuestionRepository.findForQuizGeneration().randomOffsets: `, randomOffsets);
     
             // Fetch multiple random questions
             const randomQuestions = await Promise.all(
-                randomOffsets.map((offset) =>
-                    this.database.question.findFirst({
+                randomOffsets.map(async (offset) => await this.database.question.findFirst({
                         where,
                         skip: offset,
                         include: {
@@ -335,11 +340,13 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
                     })
                 )
             );
+
+            logger.debug(`PrismaQuestionRepository.findForQuizGeneration().randomOffsets: `, randomQuestions.map((q) => q?.id));
     
             return randomQuestions
                 .map((q) => q ? this.fitModelToEntity(q) as Question : null)
                 .filter((q): q is Question => q !== null);
-                
+
         } catch (error) {
             logger.error('Error finding random questions:', error);
             throw new Error('Error finding random questions');

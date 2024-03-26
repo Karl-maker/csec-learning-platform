@@ -1,6 +1,5 @@
 import QuestionRepository from "../../adapters/repositories/interfaces/interface.question.respository";
 import { QuizType, QuizTypes } from "../../types/quiz.type";
-import arrayToRecord from "../../utils/array.to.record";
 import Question from "../interfaces/interface.question.entity";
 import Quiz from "../interfaces/interface.quiz.entity";
 
@@ -9,30 +8,29 @@ abstract class AbstractQuiz implements Quiz {
     type: QuizTypes;
     tier_level: number;
     range: number;
-    topics: { id: number | null; name: string; }[];
+    topics: { id: number; name?: string; }[];
     questions: { outline: { question_id: number; }[]; details?: Record<number, Question> | undefined; };
 
     constructor(data: QuizType){
-        this.id = null;
+        this.id = data.id || null;
         this.type = data.type;
         this.tier_level = data.tier_level;
-        this.topics = data.topics.map((t) => ({ id: null, name: t }));
+        this.range = data.range;
+        this.topics = data.topics.map((t) => ({ id: t.id }));
         this.questions = {
-            outline: [],
+            outline: data.question_outline || [],
             details: {}
         }
     }
 
-    // async generate <Repository extends QuestionRepository<any>, Quiz extends AbstractQuiz>(amount_of_questions: number, repository: Repository) : Promise<Quiz> {
-        
-    //     const questions = await repository.findForQuizGeneration([this.tier_level], this.topics.map((t) => t.name), amount_of_questions);
-
-    //     this.questions = {
-    //         outline: questions.map((q) => ({ question_id: Number(q.id) })),
-    //         details: arrayToRecord<Question>(questions)
-    //     }
-
-    //     return this;
-    // };
+    addQuestion (question: Question) : void {
+        if(!question.id) return;
+        this.questions.outline.push({ question_id: question.id as number });
+        if(typeof question.id !== 'number') return;
+        this.questions.details = {
+            ...this.questions.details,
+            [question.id] : question
+        };
+    };
 }
 export default AbstractQuiz;
