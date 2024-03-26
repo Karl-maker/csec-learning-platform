@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { Content } from "./utils.type";
 
 export type QuestionType = {
@@ -80,3 +81,8 @@ export type QuestionModel = {
         assigned_at: Date;
     })[];
 };
+const QuestionPrismaModel = Prisma.validator<Prisma.QuestionDefaultArgs>()({
+    include: { content: true, topics: { include: { topic: true } }, hints: { include: { hint: true } }, multiple_choice_answers: true },
+})
+
+export type QuestionPrismaModelType = typeof QuestionPrismaModel;

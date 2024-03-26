@@ -1,5 +1,5 @@
 import CreateQuizDTO from "../../adapters/presenters/dto/quiz/quiz.create.dto";
-import QuestionRepository from "../../adapters/repositories/interfaces/interface.question.respository";
+import QuestionRepository from "../../adapters/repositories/interfaces/interface.question.repository";
 import QuizRepository from "../../adapters/repositories/interfaces/interface.quiz.repository";
 import { VALUES } from "../../constants";
 import BasicQuiz from "../../entities/concretes/basic.quiz.entity";

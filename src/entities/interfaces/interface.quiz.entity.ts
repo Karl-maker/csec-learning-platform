@@ -1,4 +1,4 @@
-import QuestionRepository from "../../adapters/repositories/interfaces/interface.question.respository";
+import QuestionRepository from "../../adapters/repositories/interfaces/interface.question.repository";
 import QuizRepository from "../../adapters/repositories/interfaces/interface.quiz.repository";
 import { QuizTypes } from "../../types/quiz.type";
 import AbstractQuiz from "../abstracts/abstract.quiz.entity";

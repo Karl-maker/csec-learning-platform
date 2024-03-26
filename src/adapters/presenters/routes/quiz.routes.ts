@@ -1,7 +1,7 @@
 import { Router } from "express";
 import controller from "../../controllers/quiz/quiz.controller";
 import PrismaQuestionRepository from "../../repositories/prisma/prisma.question.repository";
-import QuestionRepository from "../../repositories/interfaces/interface.question.respository";
+import QuestionRepository from "../../repositories/interfaces/interface.question.repository";
 import { PrismaClient } from "@prisma/client";
 import QuizRepository from "../../repositories/interfaces/interface.quiz.repository";
 import PrismaQuizRepository from "../../repositories/prisma/prisma.quiz.repository";

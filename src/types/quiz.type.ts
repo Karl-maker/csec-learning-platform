@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import Question from "../entities/interfaces/interface.question.entity";
 
 export type QuizType = {
@@ -34,3 +35,8 @@ export type QuizModel = {
         };
     }[]
 }
+const QuizPrismaModel = Prisma.validator<Prisma.QuizDefaultArgs>()({
+    include: { questions: true, topics: { include: { topic: true } } },
+})
+
+export type QuizPrismaModelType = typeof QuizPrismaModel;

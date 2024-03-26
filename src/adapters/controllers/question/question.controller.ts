@@ -6,8 +6,7 @@ import UpdateQuestionDTO from "../../presenters/dto/question/question.update.dto
 export default {
     create,
     findAll,
-    search,
-    updateById
+    search
 }
 
 function create(usecase: QuestionUseCase) {
@@ -15,19 +14,6 @@ function create(usecase: QuestionUseCase) {
         const data: CreateQuestionDTO = req.body;
         try{
             const result = await usecase.create(data);
-            res.json(result);
-        } catch(err) {
-            next(err)
-        }
-    }
-}
-
-function updateById(usecase: QuestionUseCase) {
-    return async (req: Request, res: Response, next: NextFunction) => {
-        const data: UpdateQuestionDTO = req.body;
-        const id = req.params.question_id;
-        try{
-            const result = await usecase.updateById(Number(id), data);
             res.json(result);
         } catch(err) {
             next(err)

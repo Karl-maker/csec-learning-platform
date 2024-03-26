@@ -1,14 +1,8 @@
 import logger from "../../../utils/loggers/logger.util";
-import QuestionRepository from "../interfaces/interface.question.respository";
 import { PrismaClient, Prisma } from '@prisma/client'
 import { Sort, QueryInput, FindResponse, SearchResponse } from "../../../types/repository.type";
-import { QuestionModel, QuestionMultipleChoiceType, QuestionTopicsType, QuestionType, TipType } from "../../../types/question.type";
-import Question from "../../../entities/interfaces/interface.question.entity";
-import { Content, ContentType } from "../../../types/utils.type";
-import MultipleChoiceQuestion from "../../../entities/concretes/multiple.choice.question.entity";
-import generateRandomOffsets from "../../../utils/generate.random.offset.util";
 import QuizRepository from "../interfaces/interface.quiz.repository";
-import { QuizModel, QuizType } from "../../../types/quiz.type";
+import { QuizPrismaModelType } from "../../../types/quiz.type";
 import Quiz from "../../../entities/interfaces/interface.quiz.entity";
 import BasicQuiz from "../../../entities/concretes/basic.quiz.entity";
 
@@ -18,8 +12,8 @@ export default class PrismaQuizRepository implements QuizRepository<PrismaClient
     constructor(prisma: PrismaClient) {
         this.database = prisma
     }
-
-    async findAll<QuizSortKeys>(query: QueryInput<Quiz>, sort: Sort<QuizSortKeys>): Promise<FindResponse<Quiz>> {
+      
+    async find<QuizSortKeys>(query: QueryInput<Quiz>, sort: Sort<QuizSortKeys>): Promise<FindResponse<Quiz>> {
         logger.debug(`Enter PrismaQuizRepository.find()`);
     
         const { page, field } = sort;
@@ -153,19 +147,35 @@ export default class PrismaQuizRepository implements QuizRepository<PrismaClient
     
     async save(quiz: Quiz): Promise<Quiz> {
         logger.debug(`Enter PrismaQuizRepository.save()`);
+        let result;
 
-        const result = await this.database.quiz.create({
-            data: this.fitEntityToModelCreateQuery(quiz),
-            include: {
-                questions: true,
-                topics: {
-                    include: {
-                        topic: true
-                    }
-                },
-            }
-        })
-        return this.fitModelToEntity(result);
+        if(quiz.id) {
+            result = await this.database.quiz.update({
+                where: { id: Number(quiz.id) },
+                data: this.fitEntityToModelUpdateQuery(quiz),
+                include: {
+                    questions: true,
+                    topics: {
+                        include: {
+                            topic: true
+                        }
+                    },
+                }
+            }) 
+        } else {
+            const result = await this.database.quiz.create({
+                data: this.fitEntityToModelCreateQuery(quiz),
+                include: {
+                    questions: true,
+                    topics: {
+                        include: {
+                            topic: true
+                        }
+                    },
+                }
+            })
+        }
+        return this.fitModelToEntity(result as Prisma.QuizGetPayload<QuizPrismaModelType>);
     }
 
     fitEntityToModelCreateQuery(quiz: Quiz): Prisma.QuizCreateInput {
@@ -213,7 +223,52 @@ export default class PrismaQuizRepository implements QuizRepository<PrismaClient
 
     };
 
-    fitModelToEntity(quiz: QuizModel) : Quiz {
+    fitEntityToModelUpdateQuery(quiz: Quiz): Prisma.QuizUpdateInput {
+    
+        /**
+         * @desc create questions linkage
+         */
+
+        const questions = quiz.questions.outline.map((q) => {
+            return {
+                question: {
+                    connect: {
+                        id: q.question_id
+                    }
+                }
+            };
+        })
+
+        /**
+         * @desc create topics linkage
+         */
+
+
+        const topics = quiz.topics.map((t) => {
+            return {
+                topic: {
+                    connect: {
+                        id: t.id
+                    }
+                }
+            };
+        });
+
+        return {
+            tier_level: quiz.tier_level,
+            type: quiz.type,
+            questions: {
+                create: questions
+            },
+            topics: {
+                create: topics 
+            }
+        };
+    
+
+    };
+
+    fitModelToEntity(quiz: Prisma.QuizGetPayload<QuizPrismaModelType>) : Quiz {
 
         const topics = quiz.topics.map((topic) => {
             const t = topic.topic;

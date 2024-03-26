@@ -1,8 +1,8 @@
 import logger from "../../../utils/loggers/logger.util";
-import QuestionRepository from "../interfaces/interface.question.respository";
+import QuestionRepository from "../interfaces/interface.question.repository";
 import { PrismaClient, Prisma } from '@prisma/client'
 import { Sort, QueryInput, FindResponse, SearchResponse } from "../../../types/repository.type";
-import { QuestionModel, QuestionMultipleChoiceType, QuestionTopicsType, QuestionType, TipType } from "../../../types/question.type";
+import { QuestionModel, QuestionMultipleChoiceType, QuestionPrismaModelType, QuestionTopicsType, QuestionType, TipType } from "../../../types/question.type";
 import Question from "../../../entities/interfaces/interface.question.entity";
 import { Content, ContentType } from "../../../types/utils.type";
 import MultipleChoiceQuestion from "../../../entities/concretes/multiple.choice.question.entity";
@@ -15,99 +15,7 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
         this.database = prisma
     }
 
-    async updateById(id: number, data: Partial<QuestionType>): Promise<Question> {
-
-        let update: Prisma.XOR<Prisma.QuestionUpdateInput, Prisma.QuestionUncheckedUpdateInput> = {};
-
-        /**
-         * @desc Adding basic type updates
-         */
-
-        if(data.name) update.name = data.name;
-        if(data.description) update.description = data.description;
-        if(data.tier_level) update.tier_level = data.tier_level;
-
-        /**
-         * @desc complex updates
-         */
-
-        if(data.content) {
-            update.content = {
-                update: [],
-                create: []
-            }
-            
-            data.content.forEach((c) => {
-                const data : Content = {
-                    type: c.type,
-                    alt: c.alt,
-                    text: c.text,
-                    key: c.key,
-                    url: c.url
-                };
-
-                if(c.id && Array.isArray(update.content?.update)) update.content?.update.push({
-                    where: {
-                        id: c.id
-                    },
-                    data
-                })
-
-                if(!c.id && Array.isArray(update.content?.create)) update.content?.create.push({
-                    ...data
-                })
-            });
-        }
-
-        if(data.multiple_choices) {
-            update.multiple_choice_answers = {
-                update: [],
-                create: []
-            }
-            
-            data.multiple_choices.forEach((m) => {
-                const data = {
-                    type: m.content.type,
-                    alt: m.content.alt,
-                    text: m.content.text,
-                    key: m.content.key,
-                    url: m.content.url,
-                    correct: m.is_correct
-                };
-
-                if(m.id && Array.isArray(update.multiple_choice_answers?.update)) update.multiple_choice_answers?.update.push({
-                    where: {
-                        id: m.id
-                    },
-                    data
-                })
-
-                if(!m.id && Array.isArray(update.multiple_choice_answers?.create)) update.multiple_choice_answers?.create.push({
-                    ...data
-                })
-            });
-        }
-
-        const result = await this.database.question.update({
-            where: {
-                id
-            },
-            data: update,
-            include: {
-                multiple_choice_answers: true,
-                content: true,
-                topics: {
-                    include: {
-                        topic: true
-                    }
-                }
-            }
-        })
-
-        return this.fitModelToEntity(result)
-    };
-
-    async findAll<QuestionSortKeys>(query: QueryInput<Question>, sort: Sort<QuestionSortKeys>): Promise<FindResponse<Question>> {
+    async find<QuestionSortKeys>(query: QueryInput<Question>, sort: Sort<QuestionSortKeys>): Promise<FindResponse<Question>> {
         logger.debug(`Enter PrismaQuestionRepository.find()`);
     
         const { page, field } = sort;
@@ -250,6 +158,11 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
                         include: {
                             topic: true
                         }
+                    },
+                    hints: {
+                        include: {
+                            hint: true
+                        }
                     }
                 },
                 orderBy: {
@@ -272,19 +185,38 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
     async save(question: Question): Promise<Question> {
         logger.debug(`Enter PrismaQuestionRepository.save()`);
 
-        const result = await this.database.question.create({
-            data: this.fitEntityToModelCreateQuery(question),
-            include: {
-                multiple_choice_answers: true,
-                content: true,
-                topics: {
-                    include: {
-                        topic: true
+        let result;
+
+        if(question.id) {
+            result = await this.database.question.update({
+                where: { id: Number(question.id) },
+                data: this.fitEntityToModelUpdateQuery(question),
+                include: {
+                    multiple_choice_answers: true,
+                    content: true,
+                    topics: {
+                        include: {
+                            topic: true
+                        }
                     }
                 }
-            }
-        })
-        return this.fitModelToEntity(result);
+            }) 
+        } else {
+            result = await this.database.question.create({
+                data: this.fitEntityToModelCreateQuery(question),
+                include: {
+                    multiple_choice_answers: true,
+                    content: true,
+                    topics: {
+                        include: {
+                            topic: true
+                        }
+                    }
+                }
+            })
+        }
+
+        return this.fitModelToEntity(result as Prisma.QuestionGetPayload<QuestionPrismaModelType>);
     }
 
     async findForQuizGeneration(tiers: number[], topics: number[], amount: number): Promise<Question[]> {
@@ -494,7 +426,148 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
 
     };
 
-    fitModelToEntity(question: QuestionModel) : Question {
+    fitEntityToModelUpdateQuery(question: Question): Prisma.QuestionUpdateInput {
+    
+        /**
+         * @desc create content for question
+         */
+
+        const content = question.content.map((c) => {
+            const response: {
+                text: null | string;
+                type: string;
+                url: null | string;
+                key: null | string;
+                alt: null | string;
+            } = {
+                text: null,
+                type: '',
+                url: null,
+                key: null,
+                alt: null
+            };
+            response.type = c.type;
+            if(c.url) response.url = c.url;
+            if(c.text) response.text = c.text;
+            if(c.alt) response.alt = c.alt;
+            if(c.key) response.key = c.key;
+
+            return response;
+        })
+
+        /**
+         * @desc create answers for question
+         */
+
+        const multiple_choice = question.multiple_choice ? question.multiple_choice.map((m) => {
+            const response: {
+                text: null | string;
+                type: string;
+                url: null | string;
+                correct: boolean;
+            } = {
+                text: null,
+                type: '',
+                url: null,
+                correct: false
+            };
+            response.type = m.content.type;
+            response.correct = m.is_correct
+            if(m.content.url) response.url = m.content.url;
+            if(m.content.text) response.text = m.content.text;
+            return response;
+        }) : null;
+
+        /**
+         * @desc Connect OR Create Tips / Hints
+         */
+
+        const hints = question.tips ? question.tips.map((tip) => {
+            let response: {
+                hint: {
+                    connect?: {
+                        id: number;
+                    };
+                    create?: {
+                        text: string | null;
+                        url: string | null;
+                        type: string;
+                    };
+                };
+            };
+
+            response = tip.id ? { 
+                hint: { 
+                    connect: { id: tip.id as number } 
+                } 
+            } : {
+                hint: { 
+                    create: { 
+                        text: tip.text || null,
+                        url: tip.url || null,
+                        type: tip.type
+                    } 
+                }   
+            }
+
+            return response
+        }) : [];
+
+        /**
+         * @desc Connect OR Create Topics
+         */
+
+        const topics = question.topics ? question.topics.map((topic) => {
+            let response: {
+                topic: {
+                    connect?: {
+                        id: number;
+                    };
+                    create?: {
+                        name: string;
+                        description: string;
+                    };
+                };
+            };
+
+            response = topic.id ? { 
+                topic: { 
+                    connect: { id: topic.id as number } 
+                } 
+            } : {
+                topic: { 
+                    create: { 
+                        name: topic.name,
+                        description: topic.description,
+                    } 
+                }   
+            }
+
+            return response
+        }) : [];
+
+        return {
+            name: question.name,
+            description: question.description,
+            tier_level: question.tier_level,
+            content: {
+                create: content
+            },
+            multiple_choice_answers: {
+                create: multiple_choice ? multiple_choice : []
+            },
+            hints: {
+                create: hints
+            },
+            topics: {
+                create: topics
+            } 
+        };
+    
+
+    };
+
+    fitModelToEntity(question: Prisma.QuestionGetPayload<QuestionPrismaModelType>) : Question {
 
         const content: Content[] = question.content.map((c) => {
             const result: Content = {

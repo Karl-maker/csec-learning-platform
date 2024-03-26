@@ -1,6 +1,6 @@
 import CreateQuestionDTO from "../../adapters/presenters/dto/question/question.create.dto";
 import UpdateQuestionDTO from "../../adapters/presenters/dto/question/question.update.dto";
-import QuestionRepository from "../../adapters/repositories/interfaces/interface.question.respository";
+import QuestionRepository from "../../adapters/repositories/interfaces/interface.question.repository";
 import MultipleChoiceQuestion from "../../entities/concretes/multiple.choice.question.entity";
 import Question from "../../entities/interfaces/interface.question.entity";
 import IUploadRepository from "../../services/file/interface.file.storage.service";
@@ -173,7 +173,7 @@ export default class QuestionUseCase {
 
     async findAll(query: QueryInput<Question>, sort: Sort<QuestionSortKeys>): Promise<FindAllUseCaseResponse<Question>> {
         try {
-            const result = await this.questionRepository.findAll(query, sort);
+            const result = await this.questionRepository.find(query, sort);
             return {
                 amount: result.amount,
                 data: result.data || []
@@ -182,110 +182,6 @@ export default class QuestionUseCase {
             throw err;
         }
     }
-
-    async updateById(id: number, data: UpdateQuestionDTO): Promise<UpdateUseCaseResponse<Question>> {
-
-        const {
-            name,
-            description,
-            tier_level,
-            content,
-            multiple_choice,
-        } = data;
-
-        let question: Partial<QuestionType> = {};
-
-        // Fit Data
-
-        if(name) question.name = name;
-        if(description) question.description = description;
-        if(tier_level) question.tier_level = tier_level;
-
-        /**
-         * @desc below we are mapping the list of data to fit the entity. we are also uploading and getting all media locations here
-         */
-
-        question.content = !content ? undefined : await Promise.all(content.map(async (c) => {
-            let result: Content = {
-                type: "text",
-                id: c.id || undefined,
-                alt: c.alt || undefined,
-                text: c.text || undefined
-            }
-
-            if(c.audio) {
-                const { location, key } = await this.fileRepository.upload(c.audio);
-                result.type = 'audio';
-                result.url = location;
-                result.key = key
-            } 
-            else if (c.video) {
-                const { location, key } = await this.fileRepository.upload(c.video);
-                result.type = 'video';
-                result.url = location;
-                result.key = key
-            }
-            else if (c.image) {
-                const { location, key } = await this.fileRepository.upload(c.image);
-                result.type = 'image';
-                result.url = location;
-                result.key = key
-            } 
-
-            return result;
-        }));
-
-        question.multiple_choices = !multiple_choice ? undefined : await Promise.all(multiple_choice.map(async (m) => {
-            let result: QuestionMultipleChoiceType = {
-                id: m.id || undefined,
-                is_correct: m.correct,
-                content: {
-                    type: 'text',
-                    alt: m.alt || undefined,
-                    text: m.text || undefined
-                }
-            }
-
-            if(m.audio) {
-                const { location, key } = await this.fileRepository.upload(m.audio);
-                result.content.type = 'audio';
-                result.content.url = location;
-                result.content.key = key
-            } 
-            else if (m.video) {
-                const { location, key } = await this.fileRepository.upload(m.video);
-                result.content.type = 'video';
-                result.content.url = location;
-                result.content.key = key
-            }
-            else if (m.image) {
-                const { location, key } = await this.fileRepository.upload(m.image);
-                result.content.type = 'image';
-                result.content.url = location;
-                result.content.key = key
-            } 
-
-            return result;
-        }));
-
-        try {
-            if(question.tier_level) {
-                if(question.tier_level < 0 || question.tier_level > 20) return {
-                    success: false,
-                    message: 'Difficulty must be between 1 - 20'
-                }
-            }
-            const result = await this.questionRepository.updateById(id, question);
-            return {
-                data: result,
-                success: true,
-                message: 'Question Updated Successfully'
-            }
-        } catch(err) {
-            throw err;
-        }
-        
-    };
 
     async search(search: string, sort: Sort<QuestionSortKeys>): Promise<SearchUseCaseResponse<Question>> {
         try {
