@@ -1,15 +1,15 @@
-import { QuestionMultipleChoiceType, QuestionTopicsType, QuestionType, TipType } from "../../types/question.type";
-import { Content } from "../../types/utils.type";
+import { QuestionMultipleChoiceType, QuestionTopicsType, TipType } from "../../types/question.type";
+import { Action, Content } from "../../types/utils.type";
 
 interface Question {
     id: string | number | null;
     name: string;
     description: string;
-    content: Content[];
+    content: (Content & { to_be?: Action })[];
     tier_level: number;
-    topics?: QuestionTopicsType[];
-    multiple_choice?: QuestionMultipleChoiceType[] | null;
-    tips?: TipType[];
+    topics?: (QuestionTopicsType & { to_be?: Action })[];
+    multiple_choice?: (QuestionMultipleChoiceType & { to_be?: Action })[] | null;
+    tips?: (TipType & { to_be?: Action })[];
 
     isDifficultyLevelInRange(): boolean;
 

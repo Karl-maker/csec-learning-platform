@@ -13,6 +13,7 @@ const repository: QuestionRepository<PrismaClient> = new PrismaQuestionRepositor
 const usecase = new QuestionUseCase(repository, fileRepository);
 
 routes.post('/', controller.create(usecase));
+routes.put('/:question_id', controller.updateById(usecase));
 routes.get('/', controller.findAll(usecase));
 routes.get('/search', controller.search(usecase));
 

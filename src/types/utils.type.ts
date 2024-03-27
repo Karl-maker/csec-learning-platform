@@ -7,3 +7,4 @@ export type Content = {
     alt?: string;
 }
 export type ContentType = 'video' | 'audio' | 'image' | 'text' | '3d';
+export type Action = 'deleted' | 'added' | 'updated';

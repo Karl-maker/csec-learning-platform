@@ -188,9 +188,10 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
         let result;
 
         if(question.id) {
+            const data = this.fitEntityToModelUpdateQuery(question);
             result = await this.database.question.update({
                 where: { id: Number(question.id) },
-                data: this.fitEntityToModelUpdateQuery(question),
+                data,
                 include: {
                     multiple_choice_answers: true,
                     content: true,
@@ -243,12 +244,8 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
                 where
             });
 
-            logger.debug(`PrismaQuestionRepository.findForQuizGeneration().totalQuestionsCount: `, totalQuestionsCount);
-
             // Generate random offsets for multiple questions
             const randomOffsets = generateRandomOffsets(totalQuestionsCount, amount);
-
-            logger.debug(`PrismaQuestionRepository.findForQuizGeneration().randomOffsets: `, randomOffsets);
     
             // Fetch multiple random questions
             const randomQuestions = await Promise.all(
@@ -272,8 +269,6 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
                     })
                 )
             );
-
-            logger.debug(`PrismaQuestionRepository.findForQuizGeneration().randomOffsets: `, randomQuestions.map((q) => q?.id));
     
             return randomQuestions
                 .map((q) => q ? this.fitModelToEntity(q) as Question : null)
@@ -427,12 +422,14 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
     };
 
     fitEntityToModelUpdateQuery(question: Question): Prisma.QuestionUpdateInput {
-    
+
         /**
          * @desc create content for question
          */
 
-        const content = question.content.map((c) => {
+        let update: Prisma.QuestionUpdateInput = {};
+
+        question.content.forEach((c) => {
             const response: {
                 text: null | string;
                 type: string;
@@ -452,14 +449,38 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
             if(c.alt) response.alt = c.alt;
             if(c.key) response.key = c.key;
 
-            return response;
+            if(!update.content) update.content = {};
+
+            if(!c.id && c.to_be === 'added') {
+                if(!Array.isArray(update.content.create)) update.content.create = [];
+                update.content?.create.push({
+                    ...response
+                })
+            }
+            if(c.id && c.to_be === 'updated') {
+                if(!Array.isArray(update.content.update)) update.content.update = [];
+                update.content?.update.push({
+                    where: {
+                        id: c.id
+                    },
+                    data: {
+                        ...response
+                    }
+                })
+            }
+            if(c.id && c.to_be === 'deleted') {
+                if(!Array.isArray(update.content.delete)) update.content.delete = [];
+                update.content?.delete.push({
+                    id: c.id
+                })
+            }
         })
 
         /**
          * @desc create answers for question
          */
 
-        const multiple_choice = question.multiple_choice ? question.multiple_choice.map((m) => {
+        if(question.multiple_choice) question.multiple_choice.forEach((m) => {
             const response: {
                 text: null | string;
                 type: string;
@@ -475,93 +496,179 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
             response.correct = m.is_correct
             if(m.content.url) response.url = m.content.url;
             if(m.content.text) response.text = m.content.text;
-            return response;
-        }) : null;
 
+            if(!update.multiple_choice_answers) update.multiple_choice_answers = {};
+
+            if(!m.id && m.to_be === 'added') {
+                if(!Array.isArray(update.multiple_choice_answers.create)) update.multiple_choice_answers.create = []
+                update.multiple_choice_answers.create.push({
+                    ...response
+                })
+            }
+
+            if(m.id && m.to_be === 'updated'){ 
+                console.log('NIGGAS BE WILDIN', response)
+                if(!Array.isArray(update.multiple_choice_answers.update)) update.multiple_choice_answers.update = []
+                update.multiple_choice_answers.update.push({
+                    where: {
+                        id: m.id
+                    },
+                    data: {
+                        ...response
+                    }
+                })
+            }
+            if(m.id && m.to_be === 'deleted') {
+                if(!Array.isArray(update.multiple_choice_answers.delete)) update.multiple_choice_answers.delete = []
+                update.multiple_choice_answers.delete.push({
+                    id: m.id
+                }) 
+            }
+        });
         /**
          * @desc Connect OR Create Tips / Hints
          */
 
-        const hints = question.tips ? question.tips.map((tip) => {
-            let response: {
-                hint: {
-                    connect?: {
-                        id: number;
-                    };
-                    create?: {
-                        text: string | null;
-                        url: string | null;
-                        type: string;
-                    };
-                };
-            };
+        if(question.tips) question.tips.map((tip) => {
 
-            response = tip.id ? { 
-                hint: { 
-                    connect: { id: tip.id as number } 
-                } 
-            } : {
-                hint: { 
-                    create: { 
-                        text: tip.text || null,
-                        url: tip.url || null,
-                        type: tip.type
-                    } 
-                }   
+            if(!update.hints) update.hints = {};
+
+            if(tip.id && tip.to_be === 'added') {
+                if(!Array.isArray(update.hints?.create)) update.hints.create = [];
+                update.hints.create.push({
+                    hint: {
+                        connect: {
+                            id: tip.id
+                        }
+                    },
+                } as (Prisma.QuestionHintCreateWithoutQuestionInput & Prisma.QuestionHintUncheckedCreateWithoutQuestionInput));
             }
 
-            return response
-        }) : [];
+            if(!tip.id && tip.to_be === 'added') {
+                if(!Array.isArray(update.hints?.create)) update.hints.create = [];
+                update.hints.create.push({
+                    hint: {
+                        create: {
+                            url: tip.url,
+                            text: tip.text,
+                            alt: tip.alt,
+                            type: tip.type,
+                            key: tip.key,
+                        }
+                    },
+                } as (Prisma.QuestionHintCreateWithoutQuestionInput & Prisma.QuestionHintUncheckedCreateWithoutQuestionInput));
+            }
+
+            if(tip.id && tip.to_be === 'updated') { 
+                if(!Array.isArray(update.hints?.update)) update.hints.update = [];
+                update.hints?.update.push({
+                    where: {
+                        hint_id_question_id: {
+                            hint_id: tip.id,
+                            question_id: Number(question.id)
+                        }
+                    },
+                    data: {
+                        hint: {
+                            upsert: {
+                                update: {
+                                    text: tip.text || null,
+                                    url: tip.url || null,
+                                    type: String(tip.type) 
+                                },
+                                create: {
+                                    text: tip.text || null,
+                                    url: tip.url || null,
+                                    type: String(tip.type) 
+                                }
+                            }
+                        },
+                    }
+                })
+            }
+            if(tip.id && tip.to_be === 'deleted'){ 
+                if(!Array.isArray(update.hints?.delete)) update.hints.delete = [];
+                update.hints?.delete.push({
+                    hint_id_question_id: {
+                        hint_id: tip.id,
+                        question_id: Number(question.id)
+                    }
+                })
+            }
+        });
 
         /**
          * @desc Connect OR Create Topics
          */
 
-        const topics = question.topics ? question.topics.map((topic) => {
-            let response: {
-                topic: {
-                    connect?: {
-                        id: number;
-                    };
-                    create?: {
-                        name: string;
-                        description: string;
-                    };
-                };
-            };
+        if(question.topics) question.topics.map((topic) => {
+            if(!update.topics) update.topics = {};
 
-            response = topic.id ? { 
-                topic: { 
-                    connect: { id: topic.id as number } 
-                } 
-            } : {
-                topic: { 
-                    create: { 
-                        name: topic.name,
-                        description: topic.description,
-                    } 
-                }   
+            if(topic.id && topic.to_be === 'added') {
+                if(!Array.isArray(update.topics?.create)) update.topics.create = [];
+                update.topics.create.push({
+                    topic: {
+                        connect: {
+                            id: topic.id
+                        }
+                    },
+                } as (Prisma.QuestionTopicCreateWithoutQuestionInput & Prisma.QuestionTopicUncheckedCreateWithoutQuestionInput));
             }
 
-            return response
-        }) : [];
+            if(!topic.id && topic.to_be === 'added') {
+                if(!Array.isArray(update.topics?.create)) update.topics.create = [];
+                update.topics.create.push({
+                    topic: {
+                        create: {
+                            name: topic.name,
+                            description: topic.description
+                        }
+                    },
+                } as (Prisma.QuestionTopicCreateWithoutQuestionInput & Prisma.QuestionTopicUncheckedCreateWithoutQuestionInput));
+            }
+
+            if(topic.id && topic.to_be === 'updated') {
+                if(!Array.isArray(update.topics?.update)) update.topics.update = []
+                update.topics?.update.push({
+                    where: {
+                        question_id_topic_id: {
+                            topic_id: topic.id,
+                            question_id: Number(question.id)
+                        }
+                    },
+                    data: {
+                        topic: {
+                            upsert: {
+                                update: {
+                                    name: topic.name,
+                                    description: topic.description
+                                },
+                                create: {
+                                    name: topic.name,
+                                    description: topic.description
+                                }
+                            }
+                        },
+                    }
+                })
+            }
+
+            if(topic.id && topic.to_be === 'deleted') {
+                if(!Array.isArray(update.topics?.delete)) update.topics.delete = []
+                update.topics?.delete.push({
+                    question_id_topic_id: {
+                        topic_id: topic.id,
+                        question_id: Number(question.id)
+                    }
+                })
+            }
+        });
 
         return {
             name: question.name,
             description: question.description,
             tier_level: question.tier_level,
-            content: {
-                create: content
-            },
-            multiple_choice_answers: {
-                create: multiple_choice ? multiple_choice : []
-            },
-            hints: {
-                create: hints
-            },
-            topics: {
-                create: topics
-            } 
+            ...update
         };
     
 
