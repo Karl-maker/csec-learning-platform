@@ -27,7 +27,7 @@ model Question {
   hints                   QuestionHint[]
   topics                  QuestionTopic[]
   exams                   ExamQuestion[]
-  quizzes           QuizQuestion[]
+  quizzes                 QuizQuestion[]
 
   @@fulltext([name])
   @@fulltext([name, description])
@@ -127,7 +127,7 @@ model Topic {
   created_at  DateTime        @default(now())
   courses     CourseTopic[]
   questions   QuestionTopic[]
-  quizzes   QuizTopic[]
+  quizzes     QuizTopic[]
 
   @@fulltext([name, description])
 }
@@ -234,6 +234,7 @@ model Student {
   school_id  Int?
   school     School?  @relation(fields: [school_id], references: [id], onDelete: SetNull)
   created_at DateTime @default(now())
+  points     Int      @default(0)
 }
 
 model School {
