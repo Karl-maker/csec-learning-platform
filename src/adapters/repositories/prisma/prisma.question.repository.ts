@@ -199,6 +199,11 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
                         include: {
                             topic: true
                         }
+                    },
+                    hints: {
+                        include: {
+                            hint: true
+                        }
                     }
                 }
             }) 
@@ -211,6 +216,11 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
                     topics: {
                         include: {
                             topic: true
+                        }
+                    },
+                    hints: {
+                        include: {
+                            hint: true
                         }
                     }
                 }
