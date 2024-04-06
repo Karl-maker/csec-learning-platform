@@ -17,7 +17,7 @@ abstract class AbstractQuestion implements Question {
         this.name = data.name;
         this.description = data.description;
         this.content = data.content;
-        this.multiple_choice = data.multiple_choices || null;;
+        this.multiple_choice = data.multiple_choices || null;
         this.tier_level = data.tier_level;
         this.topics = data.topics || [];
         this.tips = data.tips || [];

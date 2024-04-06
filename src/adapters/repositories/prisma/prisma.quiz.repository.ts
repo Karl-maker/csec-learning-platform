@@ -4,7 +4,7 @@ import { Sort, QueryInput, FindResponse, SearchResponse } from "../../../types/r
 import QuizRepository from "../interfaces/interface.quiz.repository";
 import { QuizPrismaModelType } from "../../../types/quiz.type";
 import Quiz from "../../../entities/interfaces/interface.quiz.entity";
-import BasicQuiz from "../../../entities/concretes/basic.quiz.entity";
+import BasicQuiz from "../../../entities/concretes/general.quiz.entity";
 
 export default class PrismaQuizRepository implements QuizRepository<PrismaClient> {
     database: PrismaClient;
