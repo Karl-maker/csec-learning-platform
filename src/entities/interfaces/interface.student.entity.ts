@@ -4,10 +4,12 @@ interface Student {
     id: number | null;
     username: string | null;
     school: {
-        id?: string;
+        id?: number;
         name?: string;
     } & { to_be?: Action };
     points: number;
+    account_id: number;
+    grade: number;
 }
 
 export default Student;

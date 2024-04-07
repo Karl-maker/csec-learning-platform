@@ -234,6 +234,7 @@ model Account {
 model Student {
   id         Int      @id @default(autoincrement())
   username   String   @unique
+  grade      Int      
   school_id  Int?
   school     School?  @relation(fields: [school_id], references: [id], onDelete: SetNull)
   created_at DateTime @default(now())
