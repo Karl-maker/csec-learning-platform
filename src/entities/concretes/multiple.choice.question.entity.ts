@@ -7,6 +7,7 @@ import Question from "../interfaces/interface.question.entity";
 
 export default class MultipleChoiceQuestion extends AbstractQuestion implements Question {
     constructor(data: QuestionType) {
-        super(data)
+        super(data);
+        this.type = 'multiple choice';
     }
 }

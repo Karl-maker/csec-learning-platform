@@ -739,6 +739,19 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
     
             return result;
         }) : undefined;
+
+        if(multiple_choices) {
+            return new MultipleChoiceQuestion({
+                content,
+                topics,
+                multiple_choices,
+                tips,
+                tier_level: question.tier_level,
+                id: question.id,
+                name: question.name,
+                description: question.description,
+            });
+        }
     
         return new MultipleChoiceQuestion({
             content,

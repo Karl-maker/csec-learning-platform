@@ -11,6 +11,7 @@ export type QuestionType = {
     tips?: TipType[];
     tier_level: number;
 }
+export type QuestionTypes = 'multiple choice' | null;
 export type QuestionMultipleChoiceType = {
     id?: number;
     is_correct: boolean;

@@ -1,4 +1,4 @@
-import { QuestionMultipleChoiceType, QuestionTopicsType, QuestionType, TipType } from "../../types/question.type";
+import { QuestionMultipleChoiceType, QuestionTopicsType, QuestionType, QuestionTypes, TipType } from "../../types/question.type";
 import { Content } from "../../types/utils.type";
 import Question from "../interfaces/interface.question.entity";
 
@@ -6,6 +6,7 @@ abstract class AbstractQuestion implements Question {
     public id: number | null;
     public name: string;
     public description: string;
+    public type: QuestionTypes;
     public content: Content[];
     public tier_level: number;
     public topics?: QuestionTopicsType[];
@@ -21,6 +22,7 @@ abstract class AbstractQuestion implements Question {
         this.tier_level = data.tier_level;
         this.topics = data.topics || [];
         this.tips = data.tips || [];
+        this.type = null;
     }
 
     public isDifficultyLevelInRange(): boolean {
