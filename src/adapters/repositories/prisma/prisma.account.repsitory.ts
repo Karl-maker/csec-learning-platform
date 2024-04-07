@@ -14,6 +14,21 @@ export default class PrismaAccountRepository implements AccountRepository<Prisma
         this.database = prisma
     }
 
+    async findById(id: number) : Promise<Account | null> {
+        const result = await this.database.account.findFirst({
+            where: {
+                id
+            },
+            include: {
+                student: true,
+            },
+        });
+
+        if(!result) return null;
+
+        return this.fitModelToEntity(result);
+    }
+
     async find<AccountSortKeys>(query: QueryInput<Account>, sort: Sort<AccountSortKeys>): Promise<FindResponse<Account>> {
         logger.debug(`Enter PrismaAccountRepository.find()`);
     
