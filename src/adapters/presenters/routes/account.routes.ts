@@ -11,5 +11,6 @@ const repository: AccountRepository<PrismaClient> = new PrismaAccountRepository(
 const usecase = new AccountUseCase(repository);
 
 routes.post('/login', controller.login(usecase));
+routes.post('/', controller.create(usecase));
 
 export default routes;

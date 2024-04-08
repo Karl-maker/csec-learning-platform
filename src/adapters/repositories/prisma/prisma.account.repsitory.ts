@@ -13,6 +13,20 @@ export default class PrismaAccountRepository implements AccountRepository<Prisma
     constructor(prisma: PrismaClient) {
         this.database = prisma
     }
+    async findByUnique (unique: string) : Promise<Account | null> {
+        const account = await this.database.account.findFirst({
+            where: {
+                OR: [
+                    { email: unique },
+                ]
+            },
+            include: {
+                student: true,
+            },
+        });
+        if(!account) return null;
+        return this.fitModelToEntity(account);
+    };
 
     async findById(id: number) : Promise<Account | null> {
         const result = await this.database.account.findFirst({
