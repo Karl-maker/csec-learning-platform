@@ -20,3 +20,9 @@ export class UnauthorizedError extends HTTPError {
         super(message, 401, 'Unauthorized');
     }
 }
+
+export class UnexpectedError extends HTTPError {
+    constructor(message: string) {
+        super(message, 500, 'Unexpected');
+    }
+}

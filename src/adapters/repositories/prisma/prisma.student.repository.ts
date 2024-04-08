@@ -143,6 +143,19 @@ export default class PrismaStudentRepository implements StudentRepository<Prisma
         return this.fitModelToEntity(result as Prisma.StudentGetPayload<StudentPrismaModelType>);
     }
 
+    async findByAccountId(account_id: number) : Promise<Student | null> {
+        const result = await this.database.student.findFirst({
+            where: {
+                account_id
+            },
+            include: {
+                school: true,
+            },
+        });
+        if(!result) return null;
+        return this.fitModelToEntity(result)
+    };
+
     fitEntityToModelCreateQuery(student: Student): Prisma.StudentCreateInput {
         let linkSchoolQuery = {};
 

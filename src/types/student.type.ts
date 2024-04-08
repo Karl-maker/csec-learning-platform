@@ -8,7 +8,7 @@ export type StudentType = {
         id?: number;
         name?: string;
     } & { to_be?: Action };
-    points: number;
+    points?: number;
     account_id: number;
     grade: number;
 }

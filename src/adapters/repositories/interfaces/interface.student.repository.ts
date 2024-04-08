@@ -3,4 +3,5 @@ import IRepository from "./interface.repository";
 
 export default interface StudentRepository<Model> extends IRepository<Student> {
     database: Model;
+    findByAccountId: (account_id: number) => Promise<Student | null>;
 }

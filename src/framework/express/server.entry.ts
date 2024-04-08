@@ -12,6 +12,7 @@ import { PrismaClient } from '@prisma/client';
 import * as QuestionRoutes from '../../adapters/presenters/routes/question.routes';
 import * as QuizRoutes from '../../adapters/presenters/routes/quiz.routes';
 import * as AccountRoutes from '../../adapters/presenters/routes/account.routes';
+import * as StudentRoutes from '../../adapters/presenters/routes/student.routes';
 
 dotenv.config(); // for process.env to work!
 
@@ -25,6 +26,7 @@ app.use(express.json())
 app.use(ROUTES.QUIZ, QuizRoutes.default);
 app.use(ROUTES.QUESTION, QuestionRoutes.default);
 app.use(ROUTES.ACCOUNT, AccountRoutes.default);
+app.use(ROUTES.STUDENT, StudentRoutes.default);
 
 app.get('/protected', passport.authenticate('jwt', { session: false }), (req, res) => {
   res.json({ message: 'You are authorized to access this resource' });
