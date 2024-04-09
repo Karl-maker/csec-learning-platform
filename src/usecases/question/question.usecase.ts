@@ -182,7 +182,7 @@ export default class QuestionUseCase {
         
     };
 
-    async updateById(id: number, data: UpdateQuestionDTO): Promise<CreateUseCaseResponse<Question>> {
+    async updateById(id: number, data: UpdateQuestionDTO): Promise<UpdateUseCaseResponse<Question>> {
 
         const {
             name,

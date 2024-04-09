@@ -249,6 +249,7 @@ model Student {
   school     School?  @relation(fields: [school_id], references: [id], onDelete: SetNull)
   created_at DateTime @default(now())
   points     Int      @default(0)
+  tokens     Int      @default(0)
   account    Account  @relation(fields: [account_id], references: [id], onDelete: Cascade)
   account_id Int
 }

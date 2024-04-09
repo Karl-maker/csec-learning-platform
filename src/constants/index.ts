@@ -2,7 +2,8 @@ export const ROUTES = {
     QUESTION: '/question',
     QUIZ: '/quiz',
     ACCOUNT: '/account',
-    STUDENT: '/student'
+    STUDENT: '/student',
+    SUBJECT: '/subject'
 }
 
 export const VALUES = {

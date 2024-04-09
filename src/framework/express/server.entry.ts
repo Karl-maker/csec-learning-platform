@@ -13,6 +13,7 @@ import * as QuestionRoutes from '../../adapters/presenters/routes/question.route
 import * as QuizRoutes from '../../adapters/presenters/routes/quiz.routes';
 import * as AccountRoutes from '../../adapters/presenters/routes/account.routes';
 import * as StudentRoutes from '../../adapters/presenters/routes/student.routes';
+import * as SubjectRoutes from '../../adapters/presenters/routes/subject.routes';
 
 dotenv.config(); // for process.env to work!
 
@@ -27,6 +28,7 @@ app.use(ROUTES.QUIZ, QuizRoutes.default);
 app.use(ROUTES.QUESTION, QuestionRoutes.default);
 app.use(ROUTES.ACCOUNT, AccountRoutes.default);
 app.use(ROUTES.STUDENT, StudentRoutes.default);
+app.use(ROUTES.SUBJECT, SubjectRoutes.default);
 
 app.get('/protected', passport.authenticate('jwt', { session: false }), (req, res) => {
   res.json({ message: 'You are authorized to access this resource' });
