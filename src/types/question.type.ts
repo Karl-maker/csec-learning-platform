@@ -7,15 +7,21 @@ export type QuestionType = {
     description: string;
     content: Content[];
     multiple_choices?: QuestionMultipleChoiceType[];
+    short_answers?: QuestionShortAnswerType[];
     topics: QuestionTopicsType[];
     tips?: TipType[];
     tier_level: number;
 }
-export type QuestionTypes = 'multiple choice' | null;
+export type QuestionTypes = 'multiple choice' | 'short answer' | null;
 export type QuestionMultipleChoiceType = {
     id?: number;
     is_correct: boolean;
     content: Content;
+}
+export type QuestionShortAnswerType = {
+    id?: number;
+    is_correct: boolean;
+    text: string;
 }
 export type QuestionTopicsType = {
     id?: number;
@@ -83,7 +89,7 @@ export type QuestionModel = {
     })[];
 };
 const QuestionPrismaModel = Prisma.validator<Prisma.QuestionDefaultArgs>()({
-    include: { content: true, topics: { include: { topic: true } }, hints: { include: { hint: true } }, multiple_choice_answers: true },
+    include: { content: true, topics: { include: { topic: true } }, hints: { include: { hint: true } }, multiple_choice_answers: true, short_answers: true },
 })
 
 export type QuestionPrismaModelType = typeof QuestionPrismaModel;

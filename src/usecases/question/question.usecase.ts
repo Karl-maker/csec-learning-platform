@@ -4,7 +4,7 @@ import QuestionRepository from "../../adapters/repositories/interfaces/interface
 import MultipleChoiceQuestion from "../../entities/concretes/multiple.choice.question.entity";
 import Question from "../../entities/interfaces/interface.question.entity";
 import IUploadRepository from "../../services/file/interface.file.storage.service";
-import { QuestionMultipleChoiceType, QuestionSortKeys, QuestionTopicsType, QuestionType } from "../../types/question.type";
+import { QuestionMultipleChoiceType, QuestionShortAnswerType, QuestionSortKeys, QuestionTopicsType, QuestionType } from "../../types/question.type";
 import { QueryInput, Sort } from "../../types/repository.type";
 import { CreateUseCaseResponse, FindAllUseCaseResponse, SearchUseCaseResponse, UpdateUseCaseResponse } from "../../types/usecase.type";
 import { Action, Content } from "../../types/utils.type";
@@ -27,7 +27,8 @@ export default class QuestionUseCase {
             content,
             multiple_choice,
             hints,
-            topics
+            topics,
+            short_answer
         } = data;
 
         let question: Question;
@@ -99,6 +100,15 @@ export default class QuestionUseCase {
             return result;
         }));
 
+        const entity_short_answer: QuestionShortAnswerType[] | undefined = !short_answer ? undefined : await Promise.all(short_answer.map(async (answer) => {
+            let result: QuestionShortAnswerType = {
+                is_correct: answer.correct,
+                text: answer.text
+            }
+
+            return result;
+        }));
+
         const entity_hints: Content[] | undefined = !hints ? undefined : await Promise.all(hints.map(async (h) => {
             let result: Content = {
                 type: "text",
@@ -146,6 +156,7 @@ export default class QuestionUseCase {
             content: entity_content,
             topics: entity_topics,
             tips: entity_hints,
+            short_answers: entity_short_answer,
             id: null
         }
 
@@ -180,7 +191,8 @@ export default class QuestionUseCase {
             content,
             multiple_choice,
             hints,
-            topics
+            topics,
+            short_answer
         } = data;
 
         let question: Question;
@@ -258,6 +270,18 @@ export default class QuestionUseCase {
             return result;
         }));
 
+        const entity_short_answer: QuestionShortAnswerType[] | undefined = !short_answer ? undefined : await Promise.all(short_answer.map(async (choice) => {
+            let result: QuestionShortAnswerType & { to_be?: Action } = {
+                is_correct: choice.correct,
+                text: choice.text
+            }
+
+            if(choice.to_be) result.to_be = choice.to_be
+            if(choice.id) result.id = choice.id
+
+            return result;
+        }));
+
         const entity_hints: Content[] | undefined = !hints ? undefined : await Promise.all(hints.map(async (h) => {
             let result: Content & { to_be?: Action } = {
                 type: "text",
@@ -311,6 +335,7 @@ export default class QuestionUseCase {
             content: entity_content,
             topics: entity_topics,
             tips: entity_hints,
+            short_answers: entity_short_answer,
             id
         }
 

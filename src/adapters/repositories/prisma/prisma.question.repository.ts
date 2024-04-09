@@ -2,11 +2,12 @@ import logger from "../../../utils/loggers/logger.util";
 import QuestionRepository from "../interfaces/interface.question.repository";
 import { PrismaClient, Prisma } from '@prisma/client'
 import { Sort, QueryInput, FindResponse, SearchResponse } from "../../../types/repository.type";
-import { QuestionModel, QuestionMultipleChoiceType, QuestionPrismaModelType, QuestionTopicsType, QuestionType, TipType } from "../../../types/question.type";
+import { QuestionModel, QuestionMultipleChoiceType, QuestionPrismaModelType, QuestionShortAnswerType, QuestionTopicsType, QuestionType, TipType } from "../../../types/question.type";
 import Question from "../../../entities/interfaces/interface.question.entity";
 import { Content, ContentType } from "../../../types/utils.type";
 import MultipleChoiceQuestion from "../../../entities/concretes/multiple.choice.question.entity";
 import generateRandomOffsets from "../../../utils/generate.random.offset.util";
+import ShortAnswerQuestion from "../../../entities/concretes/short.answer.question.entity";
 
 export default class PrismaQuestionRepository implements QuestionRepository<PrismaClient> {
     database: PrismaClient;
@@ -54,6 +55,7 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
                 },
                 include: {
                     multiple_choice_answers: true,
+                    short_answers: true,
                     content: true,
                     topics: {
                         include: {
@@ -153,6 +155,7 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
                 where: query,
                 include: {
                     multiple_choice_answers: true,
+                    short_answers: true,
                     content: true,
                     topics: {
                         include: {
@@ -194,6 +197,7 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
                 data,
                 include: {
                     multiple_choice_answers: true,
+                    short_answers: true,
                     content: true,
                     topics: {
                         include: {
@@ -212,6 +216,7 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
                 data: this.fitEntityToModelCreateQuery(question),
                 include: {
                     multiple_choice_answers: true,
+                    short_answers: true,
                     content: true,
                     topics: {
                         include: {
@@ -264,6 +269,7 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
                         skip: offset,
                         include: {
                             multiple_choice_answers: true,
+                            short_answers: true,
                             content: true,
                             topics: {
                                 include: {
@@ -339,6 +345,17 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
             response.correct = m.is_correct
             if(m.content.url) response.url = m.content.url;
             if(m.content.text) response.text = m.content.text;
+            return response;
+        }) : null;
+
+        const short_answer = question.short_answer ? question.short_answer.map((m) => {
+            const response: {
+                text: string;
+                correct: boolean;
+            } = {
+                text: m.text,
+                correct: m.is_correct
+            };
             return response;
         }) : null;
 
@@ -419,6 +436,9 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
             },
             multiple_choice_answers: {
                 create: multiple_choice ? multiple_choice : []
+            },
+            short_answers: {
+                create: short_answer ? short_answer : []
             },
             hints: {
                 create: hints
@@ -517,7 +537,6 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
             }
 
             if(m.id && m.to_be === 'updated'){ 
-                console.log('NIGGAS BE WILDIN', response)
                 if(!Array.isArray(update.multiple_choice_answers.update)) update.multiple_choice_answers.update = []
                 update.multiple_choice_answers.update.push({
                     where: {
@@ -531,6 +550,43 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
             if(m.id && m.to_be === 'deleted') {
                 if(!Array.isArray(update.multiple_choice_answers.delete)) update.multiple_choice_answers.delete = []
                 update.multiple_choice_answers.delete.push({
+                    id: m.id
+                }) 
+            }
+        });
+
+        if(question.short_answer) question.short_answer.forEach((m) => {
+            const response: {
+                text: string;
+                correct: boolean;
+            } = {
+                text: m.text,
+                correct: m.is_correct
+            };
+
+            if(!update.short_answers) update.short_answers = {};
+
+            if(!m.id && m.to_be === 'added') {
+                if(!Array.isArray(update.short_answers.create)) update.short_answers.create = []
+                update.short_answers.create.push({
+                    ...response
+                })
+            }
+
+            if(m.id && m.to_be === 'updated'){ 
+                if(!Array.isArray(update.short_answers.update)) update.short_answers.update = []
+                update.short_answers.update.push({
+                    where: {
+                        id: m.id
+                    },
+                    data: {
+                        ...response
+                    }
+                })
+            }
+            if(m.id && m.to_be === 'deleted') {
+                if(!Array.isArray(update.short_answers.delete)) update.short_answers.delete = []
+                update.short_answers.delete.push({
                     id: m.id
                 }) 
             }
@@ -725,6 +781,17 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
             return result;
         }) : undefined;
     
+        const short_answers: QuestionShortAnswerType[] | undefined = question.short_answers ? question.short_answers.map((m) => {
+            const result: QuestionShortAnswerType = {
+                is_correct: m.correct,
+                text: m.text,
+            }
+    
+            if(m.id) result.id = m.id;
+    
+            return result;
+        }) : undefined;
+
         const tips: TipType[] | undefined = question.hints ? question.hints.map((h) => {
             const result: TipType = {
                 id: h.hint.id,
@@ -740,7 +807,20 @@ export default class PrismaQuestionRepository implements QuestionRepository<Pris
             return result;
         }) : undefined;
 
-        if(multiple_choices) {
+        if(Array.isArray(short_answers) && short_answers.length > 0) {
+            return new ShortAnswerQuestion({
+                content,
+                topics,
+                short_answers,
+                tips,
+                tier_level: question.tier_level,
+                id: question.id,
+                name: question.name,
+                description: question.description,
+            })
+        }
+
+        if(Array.isArray(multiple_choices) && multiple_choices.length > 0) {
             return new MultipleChoiceQuestion({
                 content,
                 topics,

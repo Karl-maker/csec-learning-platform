@@ -25,6 +25,13 @@ interface UpdateQuestionDTO {
         to_be?: Action;
     }>;
 
+    short_answer?: Array<{
+        id?: number;
+        text: string;
+        correct: boolean;
+        to_be?: Action;
+    }>;
+
     hints?: Array<{
         id?: number;
         text?: string;

@@ -19,6 +19,11 @@ interface CreateQuestionDTO {
         correct: boolean;
     }>;
 
+    short_answer?: Array<{
+        text: string;
+        correct: boolean;
+    }>;
+
     hints?: Array<{
         id?: number;
         text?: string;
