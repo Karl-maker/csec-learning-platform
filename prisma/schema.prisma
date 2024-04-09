@@ -24,6 +24,7 @@ model Question {
   created_at              DateTime               @default(now())
   content                 QuestionContent[]
   multiple_choice_answers MultipleChoiceAnswer[]
+  short_answers           ShortAnswer[]
   hints                   QuestionHint[]
   topics                  QuestionTopic[]
   exams                   ExamQuestion[]
@@ -55,6 +56,15 @@ model MultipleChoiceAnswer {
   key         String?
   type        String
   correct     Boolean  @default(false)
+  question    Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  question_id Int
+  created_at  DateTime @default(now())
+}
+
+model ShortAnswer {
+  id          Int      @id @default(autoincrement())
+  text        String
+  correct     Boolean  @default(true)
   question    Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
   question_id Int
   created_at  DateTime @default(now())
@@ -234,7 +244,7 @@ model Account {
 model Student {
   id         Int      @id @default(autoincrement())
   username   String   @unique
-  grade      Int      
+  grade      Int
   school_id  Int?
   school     School?  @relation(fields: [school_id], references: [id], onDelete: SetNull)
   created_at DateTime @default(now())
