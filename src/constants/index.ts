@@ -3,7 +3,10 @@ export const ROUTES = {
     QUIZ: '/quiz',
     ACCOUNT: '/account',
     STUDENT: '/student',
-    SUBJECT: '/subject'
+    SUBJECT: '/subject',
+    COURSE: '/course',
+    TOPIC: '/topic',
+    SUBSUBJECT: '/subject-breakdown'
 }
 
 export const VALUES = {
